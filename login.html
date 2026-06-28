@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Track U — Authentication</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6c63ff;
+            --primary-glow: rgba(108, 99, 255, 0.35);
+            --secondary: #8b7bff;
+            --bg: #1c1f26;
+            --card-bg: #232833;
+            --text: #e8edf5;
+            --text-secondary: #a0a8b8;
+            --text-muted: #6b7280;
+            --shadow-dark: 8px 8px 16px rgba(0, 0, 0, 0.45);
+            --shadow-light: -8px -8px 16px rgba(255, 255, 255, 0.035);
+            --shadow-inset-dark: inset 4px 4px 8px rgba(0, 0, 0, 0.25);
+            --shadow-inset-light: inset -4px -4px 8px rgba(255, 255, 255, 0.05);
+            --shadow-card: 8px 8px 16px rgba(0, 0, 0, 0.45), -8px -8px 16px rgba(255, 255, 255, 0.035);
+            --shadow-input: inset 4px 4px 8px rgba(0, 0, 0, 0.25), inset -4px -4px 8px rgba(255, 255, 255, 0.05);
+            --shadow-input-focus: inset 4px 4px 8px rgba(0, 0, 0, 0.25), inset -4px -4px 8px rgba(255, 255, 255, 0.05),
+                0 0 0 3px rgba(108, 99, 255, 0.25);
+            --shadow-btn: 6px 6px 12px rgba(0, 0, 0, 0.4), -4px -4px 10px rgba(255, 255, 255, 0.03);
+            --shadow-btn-hover: 4px 4px 8px rgba(0, 0, 0, 0.5), -2px -2px 6px rgba(255, 255, 255, 0.04);
+            --border-radius: 24px;
+            --border-radius-sm: 16px;
+            --border-radius-xs: 12px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --font: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        [data-theme="light"] {
+            --bg: #e8edf5;
+            --card-bg: #eef2f7;
+            --text: #1c1f26;
+            --text-secondary: #4a5060;
+            --text-muted: #7c8294;
+            --shadow-dark: 8px 8px 16px rgba(0, 0, 0, 0.08);
+            --shadow-light: -8px -8px 16px rgba(255, 255, 255, 0.75);
+            --shadow-card: 8px 8px 16px rgba(0, 0, 0, 0.08), -8px -8px 16px rgba(255, 255, 255, 0.75);
+            --shadow-input: inset 4px 4px 8px rgba(0, 0, 0, 0.07), inset -4px -4px 8px rgba(255, 255, 255, 0.6);
+            --shadow-input-focus: inset 4px 4px 8px rgba(0, 0, 0, 0.07), inset -4px -4px 8px rgba(255, 255, 255, 0.6),
+                0 0 0 3px rgba(108, 99, 255, 0.3);
+            --shadow-btn: 6px 6px 12px rgba(0, 0, 0, 0.06), -4px -4px 10px rgba(255, 255, 255, 0.8);
+            --shadow-btn-hover: 3px 3px 6px rgba(0, 0, 0, 0.08), -2px -2px 5px rgba(255, 255, 255, 0.9);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            transition: background var(--transition), color var(--transition);
+            position: relative;
+            padding: 0 10px;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            z-index: 100;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            border: none;
+            cursor: pointer;
+            box-shadow: var(--shadow-card);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all var(--transition);
+            color: var(--text);
+            -webkit-tap-highlight-color: transparent;
+        }
+        .theme-toggle:hover {
+            transform: scale(1.06);
+            box-shadow: var(--shadow-btn-hover);
+        }
+        .theme-toggle:active {
+            transform: scale(0.94);
+        }
+        .theme-toggle .icon-sun,
+        .theme-toggle .icon-moon {
+            transition: all 0.4s ease;
+            position: absolute;
+        }
+        [data-theme="dark"] .theme-toggle .icon-sun { opacity: 1; transform: rotate(0deg) scale(1); }
+        [data-theme="dark"] .theme-toggle .icon-moon { opacity: 0; transform: rotate(90deg) scale(0.5); }
+        [data-theme="light"] .theme-toggle .icon-sun { opacity: 0; transform: rotate(-90deg) scale(0.5); }
+        [data-theme="light"] .theme-toggle .icon-moon { opacity: 1; transform: rotate(0deg) scale(1); }
+
+        .auth-container {
+            display: flex;
+            width: 100%;
+            max-width: 1200px;
+            min-height: 90vh;
+            margin: 15px 0;
+            gap: 0;
+            position: relative;
+            z-index: 2;
+            animation: fadeInUp 0.8s ease-out;
+            align-items: center;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 30px 40px 30px 20px;
+            position: relative;
+            overflow: hidden;
+            min-width: 0;
+        }
+
+        .hero-logo, .hero-logo-fallback {
+            width: 50px;
+            height: 50px;
+            border-radius: 16px;
+            margin-bottom: 16px;
+            object-fit: contain;
+            background: var(--card-bg);
+            padding: 6px;
+            box-shadow: var(--shadow-card);
+            transition: all var(--transition);
+        }
+        .hero-logo-fallback {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.3rem;
+            color: #fff;
+            background: var(--primary);
+            box-shadow: var(--shadow-card);
+        }
+
+        .hero-headline {
+            font-size: 2.2rem;
+            font-weight: 800;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+            margin-bottom: 10px;
+            color: var(--text);
+            position: relative;
+            z-index: 1;
+        }
+        .hero-headline .gradient-text {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtext {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+            max-width: 400px;
+        }
+
+        .feature-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        .feature-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 50px;
+            background: var(--card-bg);
+            box-shadow: var(--shadow-card);
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text);
+            transition: all var(--transition);
+            cursor: default;
+            white-space: nowrap;
+            letter-spacing: -0.01em;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 18px;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 1;
+            margin-bottom: 14px;
+        }
+        .hero-stat-value {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary);
+            letter-spacing: -0.02em;
+            line-height: 1;
+        }
+        .hero-stat-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+            font-weight: 500;
+        }
+
+        .social-proof {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            flex-wrap: wrap;
+        }
+        .social-proof-avatars {
+            display: flex;
+        }
+        .social-proof-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            box-shadow: var(--shadow-card);
+            border: 2px solid var(--bg);
+            margin-left: -8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .social-proof-avatar:first-child { margin-left: 0; }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(70px);
+            opacity: 0.12;
+            pointer-events: none;
+            z-index: 0;
+            animation: blobFloat 12s ease-in-out infinite;
+        }
+        .blob-1 { width: 200px; height: 200px; background: var(--primary); top: 5%; left: -5%; }
+        .blob-2 { width: 160px; height: 160px; background: var(--secondary); bottom: 10%; right: 5%; }
+        .blob-3 { width: 140px; height: 140px; background: #a78bfa; top: 45%; left: 35%; opacity: 0.08; }
+
+        @keyframes blobFloat {
+            0%,100% { transform: translate(0,0) scale(1); }
+            25% { transform: translate(30px,-20px) scale(1.05); }
+            50% { transform: translate(-15px,20px) scale(0.95); }
+            75% { transform: translate(-25px,-10px) scale(1.04); }
+        }
+
+        #particles-canvas {
+            position: absolute;
+            top:0; left:0; width:100%; height:100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .auth-section {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            min-width: 380px;
+        }
+
+        .auth-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-card);
+            padding: 32px 28px;
+            width: 100%;
+            max-width: 420px;
+            position: relative;
+            animation: cardFloat 6s ease-in-out infinite;
+            transition: all var(--transition);
+        }
+
+        @keyframes cardFloat {
+            0%,100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        .auth-card-logo img, .auth-card-logo-fallback {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            object-fit: contain;
+            background: var(--bg);
+            padding: 4px;
+            box-shadow: var(--shadow-input);
+        }
+        .auth-card-logo-fallback {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1rem;
+            color: #fff;
+            background: var(--primary);
+        }
+
+        .auth-welcome {
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin: 12px 0 16px;
+            color: var(--text);
+            letter-spacing: -0.01em;
+        }
+
+        .tab-container {
+            position: relative;
+            display: flex;
+            background: var(--bg);
+            border-radius: 50px;
+            padding: 4px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-input);
+            overflow: hidden;
+        }
+        .tab-slider {
+            position: absolute;
+            top: 4px; left: 4px;
+            width: calc(50% - 4px);
+            height: calc(100% - 8px);
+            background: var(--primary);
+            border-radius: 50px;
+            transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
+            z-index: 0;
+            box-shadow: 2px 4px 12px rgba(108,99,255,0.35);
+        }
+        .tab-container.signup-active .tab-slider { left: 50%; }
+        .tab-btn {
+            flex:1; padding: 11px 18px; border:none; background:transparent;
+            cursor:pointer; font-family:var(--font); font-weight:600; font-size:0.85rem;
+            border-radius: 50px; position:relative; z-index:1;
+            transition: color 0.35s ease; color: var(--text-muted);
+            -webkit-tap-highlight-color: transparent;
+        }
+        .tab-btn.active { color: #fff; }
+
+        .form-panel { display: none; flex-direction: column; gap: 14px; animation: fadeInUp 0.4s ease-out; }
+        .form-panel.active { display: flex; }
+
+        .input-group { position: relative; }
+        .input-group input {
+            width: 100%; padding: 13px 42px 13px 16px; border: none;
+            border-radius: var(--border-radius-xs); background: var(--bg);
+            color: var(--text); font-family: var(--font); font-size: 0.9rem;
+            font-weight: 500; letter-spacing: -0.01em;
+            box-shadow: var(--shadow-input); transition: all var(--transition); outline: none;
+        }
+        .input-group input:focus { box-shadow: var(--shadow-input-focus); }
+        .input-group input::placeholder { color: var(--text-muted); font-weight: 400; }
+        .input-group .input-icon {
+            position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+            cursor: pointer; font-size: 1rem; color: var(--text-muted);
+            background: none; border: none; padding: 4px;
+            -webkit-tap-highlight-color: transparent; z-index: 2;
+        }
+        .input-group .input-icon:hover { color: var(--primary); }
+
+        .password-strength { display: flex; gap: 4px; margin-top: 4px; height: 4px; border-radius: 10px; overflow: hidden; }
+        .strength-segment { flex:1; background: var(--bg); border-radius: 10px; transition: all 0.4s ease; }
+        .strength-segment.filled.weak { background: #ef4444; }
+        .strength-segment.filled.medium { background: #f59e0b; }
+        .strength-segment.filled.strong { background: #10b981; }
+        .strength-segment.filled.very-strong { background: #06d6a0; }
+        .strength-text { font-size: 0.7rem; margin-top: 2px; font-weight: 500; }
+
+        .remember-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+        .remember-label {
+            display: flex; align-items: center; gap: 6px; cursor: pointer;
+            font-size: 0.78rem; color: var(--text-secondary); font-weight: 500;
+        }
+        .remember-label input[type="checkbox"] {
+            appearance: none; width: 18px; height: 18px; border-radius: 5px;
+            background: var(--bg); box-shadow: var(--shadow-input); cursor: pointer;
+            transition: all var(--transition); position: relative; flex-shrink: 0;
+        }
+        .remember-label input[type="checkbox"]:checked {
+            background: var(--primary); box-shadow: var(--shadow-input), 0 0 8px var(--primary-glow);
+        }
+        .remember-label input[type="checkbox"]:checked::after {
+            content: '✓'; position: absolute; top:50%; left:50%; transform: translate(-50%,-50%);
+            color: #fff; font-size: 0.65rem; font-weight: 700;
+        }
+        .forgot-link {
+            font-size: 0.78rem; color: var(--primary); text-decoration: none;
+            font-weight: 600; cursor: pointer; transition: all var(--transition);
+        }
+        .forgot-link:hover { color: var(--secondary); text-decoration: underline; }
+
+        .btn {
+            width: 100%; padding: 13px; border: none; border-radius: var(--border-radius-xs);
+            font-family: var(--font); font-weight: 700; font-size: 0.9rem; cursor: pointer;
+            transition: all var(--transition); letter-spacing: -0.01em;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn-primary {
+            background: var(--primary); color: #fff; box-shadow: var(--shadow-btn);
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: var(--shadow-btn-hover), 0 6px 20px var(--primary-glow); background: #7b73ff; }
+        .btn-primary:active { transform: translateY(0); box-shadow: var(--shadow-input); }
+        .btn-google { background: var(--card-bg); color: var(--text); box-shadow: var(--shadow-card); font-weight: 600; }
+        .btn-google:hover { transform: translateY(-2px); box-shadow: var(--shadow-btn-hover); }
+        .btn-google:active { transform: translateY(0); box-shadow: var(--shadow-input); }
+        .btn-google .google-icon { width: 18px; height: 18px; flex-shrink: 0; }
+
+        .divider {
+            display: flex; align-items: center; gap: 10px; color: var(--text-muted);
+            font-size: 0.72rem; font-weight: 500;
+        }
+        .divider::before,.divider::after {
+            content: ''; flex:1; height:1px; background: var(--text-muted); opacity:0.3;
+        }
+
+        .spinner {
+            width: 18px; height: 18px; border: 2px solid transparent;
+            border-top-color: currentColor; border-radius: 50%;
+            animation: spin 0.7s linear infinite; display: inline-block;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .toast-container {
+            position: fixed; top: 16px; right: 16px; z-index: 9999;
+            display: flex; flex-direction: column; gap: 8px; pointer-events: none;
+        }
+        .toast {
+            background: var(--card-bg); color: var(--text); padding: 12px 18px;
+            border-radius: var(--border-radius-xs); box-shadow: var(--shadow-card), 0 8px 30px rgba(0,0,0,0.3);
+            font-weight: 600; font-size: 0.82rem; letter-spacing: -0.01em;
+            pointer-events: auto; animation: toastIn 0.5s ease-out, toastOut 0.4s ease-in forwards;
+            display: flex; align-items: center; gap: 8px; max-width: 360px;
+            border-left: 3px solid var(--primary);
+        }
+        .toast.success { border-left-color: #10b981; }
+        .toast.error { border-left-color: #ef4444; }
+        .toast.warning { border-left-color: #f59e0b; }
+        @keyframes toastIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes toastOut { 0% { transform: translateX(0); opacity:1; } 100% { transform: translateX(120%); opacity:0; } }
+
+        /* Mobile optimizations: hide non‑essential hero content so login appears immediately */
+        @media (max-width: 850px) {
+            .auth-container {
+                flex-direction: column;
+                max-width: 520px;
+                min-height: auto;
+                margin: 5px 0;
+                gap: 0;
+            }
+            .hero-section {
+                padding: 16px 16px 0;            /* reduced top padding */
+                text-align: center;
+                align-items: center;
+            }
+            .hero-headline {
+                font-size: 1.6rem;
+                margin-bottom: 0;                 /* remove bottom gap */
+            }
+            /* Hide the elements you asked to remove */
+            .hero-subtext,
+            .feature-chips,
+            .hero-stats,
+            .social-proof {
+                display: none;
+            }
+            .blob { display: none; }
+            .auth-section {
+                padding: 10px 16px 20px;
+                min-width: 0;
+            }
+            .auth-card {
+                padding: 24px 18px;
+                max-width: 100%;
+                animation: none;
+            }
+            #particles-canvas { display: none; }
+        }
+
+        @media (max-width: 480px) {
+            .hero-headline { font-size: 1.4rem; }
+            .auth-card { padding: 20px 14px; border-radius: 20px; }
+            .btn { padding: 12px; font-size: 0.85rem; }
+            .input-group input { padding: 11px 36px 11px 12px; font-size: 0.82rem; }
+            .tab-btn { padding: 9px 14px; font-size: 0.78rem; }
+            .toast-container { top: 8px; right: 8px; left: 8px; }
+            .toast { max-width: 100%; font-size: 0.75rem; }
+            .theme-toggle { top: 10px; right: 10px; width: 38px; height: 38px; font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+        <span class="icon-sun">☀️</span>
+        <span class="icon-moon">🌙</span>
+    </button>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div class="auth-container">
+        <section class="hero-section" id="heroSection">
+            <div class="blob blob-1"></div>
+            <div class="blob blob-2"></div>
+            <div class="blob blob-3"></div>
+            <canvas id="particles-canvas"></canvas>
+
+            <img src="images/logo" alt="Track U Logo" class="hero-logo" id="heroLogo"
+                 onerror="this.style.display='none';document.getElementById('heroLogoFallback').style.display='flex';">
+            <div class="hero-logo-fallback" id="heroLogoFallback" style="display:none;">TU</div>
+
+            <h1 class="hero-headline">
+                Build Better Habits.<br>
+                Track Your Progress.<br>
+                <span class="gradient-text">Level Up Your Life.</span>
+            </h1>
+            <p class="hero-subtext">
+                Your personal productivity companion that turns daily habits into achievements.
+            </p>
+
+            <div class="feature-chips">
+                <span class="feature-chip"><span>🔥</span> Streak Tracking</span>
+                <span class="feature-chip"><span>📈</span> Progress Analytics</span>
+                <span class="feature-chip"><span>🏆</span> Achievements & XP</span>
+                <span class="feature-chip"><span>🍅</span> Pomodoro Focus</span>
+            </div>
+
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <div class="hero-stat-value" data-count="500000" data-suffix="+">0</div>
+                    <div class="hero-stat-label">Tasks Completed</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value" data-count="35000" data-suffix="+">0</div>
+                    <div class="hero-stat-label">Habits Built</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value" data-count="92" data-suffix="%">0</div>
+                    <div class="hero-stat-label">User Satisfaction</div>
+                </div>
+            </div>
+
+            <div class="social-proof">
+                <div class="social-proof-avatars">
+                    <span class="social-proof-avatar">JD</span>
+                    <span class="social-proof-avatar">MK</span>
+                    <span class="social-proof-avatar">SL</span>
+                    <span class="social-proof-avatar">+</span>
+                </div>
+                <span>Trusted by <strong>10,000+</strong> productivity enthusiasts</span>
+            </div>
+        </section>
+
+        <section class="auth-section">
+            <div class="auth-card" id="authCard">
+                <div class="auth-card-logo">
+                    <img src="images/logo" alt="Track U" id="cardLogo"
+                         onerror="this.style.display='none';document.getElementById('cardLogoFallback').style.display='flex';">
+                    <div class="auth-card-logo-fallback" id="cardLogoFallback" style="display:none;">TU</div>
+                </div>
+                <p class="auth-welcome">Welcome Back</p>
+
+                <div class="tab-container" id="tabContainer">
+                    <div class="tab-slider" id="tabSlider"></div>
+                    <button class="tab-btn active" data-tab="login">Login</button>
+                    <button class="tab-btn" data-tab="signup">Sign Up</button>
+                </div>
+
+                <form class="form-panel active" id="loginForm" autocomplete="off" novalidate>
+                    <div class="input-group">
+                        <input type="email" id="loginEmail" placeholder="Email address" required autocomplete="email">
+                        <span class="input-icon">📧</span>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="loginPassword" placeholder="Password" required autocomplete="current-password">
+                        <button type="button" class="input-icon toggle-password" tabindex="-1">👁️</button>
+                    </div>
+                    <div class="remember-row">
+                        <label class="remember-label">
+                            <input type="checkbox" id="rememberMe"> Remember Me
+                        </label>
+                        <a class="forgot-link" id="forgotPasswordLink">Forgot Password?</a>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="loginBtn">Login</button>
+                    <div class="divider">or</div>
+                    <button type="button" class="btn btn-google" id="googleLoginBtn">
+                        <svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                        Continue with Google
+                    </button>
+                </form>
+
+                <form class="form-panel" id="signupForm" autocomplete="off" novalidate>
+                    <div class="input-group">
+                        <input type="text" id="signupName" placeholder="Full Name" required autocomplete="name">
+                        <span class="input-icon">👤</span>
+                    </div>
+                    <div class="input-group">
+                        <input type="email" id="signupEmail" placeholder="Email address" required autocomplete="email">
+                        <span class="input-icon">📧</span>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="signupPassword" placeholder="Password" required autocomplete="new-password">
+                        <button type="button" class="input-icon toggle-password" tabindex="-1">👁️</button>
+                    </div>
+                    <div class="password-strength" id="passwordStrengthBar">
+                        <span class="strength-segment"></span>
+                        <span class="strength-segment"></span>
+                        <span class="strength-segment"></span>
+                        <span class="strength-segment"></span>
+                    </div>
+                    <p class="strength-text" id="strengthText" style="color:var(--text-muted);">&nbsp;</p>
+                    <div class="input-group">
+                        <input type="password" id="signupConfirmPassword" placeholder="Confirm Password" required autocomplete="new-password">
+                        <button type="button" class="input-icon toggle-password" tabindex="-1">👁️</button>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="signupBtn">Create Account</button>
+                    <div class="divider">or</div>
+                    <button type="button" class="btn btn-google" id="googleSignupBtn">
+                        <svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                        Continue with Google
+                    </button>
+                </form>
+            </div>
+        </section>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
+
+    <script>
+        (function() {
+            const firebaseConfig = {
+                apiKey: "AIzaSyBCb9gjYCVpkxbZFFrKssneYrhKyC9Ek9k",
+                authDomain: "track-u-fb116.firebaseapp.com",
+                projectId: "track-u-fb116",
+                storageBucket: "track-u-fb116.firebasestorage.app",
+                messagingSenderId: "780812482768",
+                appId: "1:780812482768:web:626ebf0789d1730b1146d5",
+                measurementId: "G-PL2DEWLQET"
+            };
+
+            firebase.initializeApp(firebaseConfig);
+            const auth = firebase.auth();
+            const analytics = firebase.analytics();
+
+            const html = document.documentElement;
+            const themeToggle = document.getElementById('themeToggle');
+            const tabContainer = document.getElementById('tabContainer');
+            const tabBtns = tabContainer.querySelectorAll('.tab-btn');
+            const loginForm = document.getElementById('loginForm');
+            const signupForm = document.getElementById('signupForm');
+            const loginBtn = document.getElementById('loginBtn');
+            const signupBtn = document.getElementById('signupBtn');
+            const googleLoginBtn = document.getElementById('googleLoginBtn');
+            const googleSignupBtn = document.getElementById('googleSignupBtn');
+            const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+            const toastContainer = document.getElementById('toastContainer');
+            const passwordStrengthBar = document.getElementById('passwordStrengthBar');
+            const strengthText = document.getElementById('strengthText');
+            const signupPasswordInput = document.getElementById('signupPassword');
+            const particlesCanvas = document.getElementById('particles-canvas');
+            const heroSection = document.getElementById('heroSection');
+            const authCard = document.getElementById('authCard');
+
+            let currentTab = 'login';
+            let isSubmitting = false;
+            let statsAnimated = false;
+
+            const savedTheme = localStorage.getItem('tracku-theme') || 'dark';
+            html.setAttribute('data-theme', savedTheme);
+
+            themeToggle.addEventListener('click', () => {
+                const current = html.getAttribute('data-theme');
+                const next = current === 'dark' ? 'light' : 'dark';
+                html.setAttribute('data-theme', next);
+                localStorage.setItem('tracku-theme', next);
+            });
+
+            function switchTab(tab) {
+                if (currentTab === tab || isSubmitting) return;
+                currentTab = tab;
+                tabBtns.forEach(b => b.classList.remove('active'));
+                const activeBtn = tabContainer.querySelector(`[data-tab="${tab}"]`);
+                activeBtn.classList.add('active');
+                if (tab === 'signup') {
+                    tabContainer.classList.add('signup-active');
+                    loginForm.classList.remove('active');
+                    signupForm.classList.add('active');
+                } else {
+                    tabContainer.classList.remove('signup-active');
+                    signupForm.classList.remove('active');
+                    loginForm.classList.add('active');
+                }
+                resetStrengthMeter();
+            }
+
+            tabBtns.forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
+
+            function showToast(message, type = 'info', duration = 3500) {
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+                toast.innerHTML = `<span>${icons[type] || icons.info}</span> ${message}`;
+                toast.style.animationDuration = '0.5s, 0.4s';
+                toast.style.animationDelay = '0s, ' + (duration / 1000 - 0.4) + 's';
+                toastContainer.appendChild(toast);
+                setTimeout(() => { if (toast.parentNode) toast.remove(); }, duration);
+            }
+
+            function setButtonLoading(btn, text) {
+                const originalText = btn.getAttribute('data-original-text') || btn.textContent.trim();
+                btn.setAttribute('data-original-text', originalText);
+                btn.innerHTML = `<span class="spinner"></span> ${text}`;
+                btn.disabled = true;
+                btn.style.pointerEvents = 'none';
+                btn.style.opacity = '0.8';
+                isSubmitting = true;
+            }
+
+            function resetButton(btn) {
+                const originalText = btn.getAttribute('data-original-text') || 'Submit';
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                btn.style.pointerEvents = 'auto';
+                btn.style.opacity = '1';
+                btn.removeAttribute('data-original-text');
+                isSubmitting = false;
+            }
+
+            function evaluatePasswordStrength(password) {
+                let score = 0;
+                if (password.length >= 6) score++;
+                if (password.length >= 10) score++;
+                if (/[A-Z]/.test(password) && /[a-z]/.test(password)) score++;
+                if (/\d/.test(password)) score++;
+                if (/[^A-Za-z0-9]/.test(password)) score++;
+                if (password.length >= 14) score++;
+                return Math.min(score, 4);
+            }
+
+            function updateStrengthMeter(password) {
+                const score = evaluatePasswordStrength(password);
+                const segments = passwordStrengthBar.querySelectorAll('.strength-segment');
+                const labels = ['', 'Weak', 'Fair', 'Strong', 'Very Strong'];
+                const colors = ['', 'weak', 'medium', 'strong', 'very-strong'];
+                const textColors = ['', '#ef4444', '#f59e0b', '#10b981', '#06d6a0'];
+                segments.forEach((seg, i) => {
+                    seg.classList.remove('filled', 'weak', 'medium', 'strong', 'very-strong');
+                    if (i < score) seg.classList.add('filled', colors[score]);
+                });
+                if (score === 0) {
+                    strengthText.textContent = '\u00A0';
+                    strengthText.style.color = 'var(--text-muted)';
+                } else {
+                    strengthText.textContent = labels[score];
+                    strengthText.style.color = textColors[score];
+                }
+            }
+
+            function resetStrengthMeter() {
+                const segments = passwordStrengthBar.querySelectorAll('.strength-segment');
+                segments.forEach(seg => seg.classList.remove('filled', 'weak', 'medium', 'strong', 'very-strong'));
+                strengthText.textContent = '\u00A0';
+                strengthText.style.color = 'var(--text-muted)';
+            }
+
+            signupPasswordInput.addEventListener('input', () => updateStrengthMeter(signupPasswordInput.value));
+
+            document.querySelectorAll('.toggle-password').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const input = btn.parentElement.querySelector('input');
+                    if (!input) return;
+                    const isPassword = input.type === 'password';
+                    input.type = isPassword ? 'text' : 'password';
+                    btn.textContent = isPassword ? '🙈' : '👁️';
+                });
+            });
+
+            async function login(email, password) {
+                await auth.signInWithEmailAndPassword(email, password);
+            }
+
+            async function signup(name, email, password) {
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                await userCredential.user.updateProfile({ displayName: name });
+                return userCredential;
+            }
+
+            async function googleLogin() {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                await auth.signInWithPopup(provider);
+            }
+
+            async function forgotPassword(email) {
+                await auth.sendPasswordResetEmail(email);
+            }
+
+            function redirectToApp() {
+                window.location.href = 'index.html';
+            }
+
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (isSubmitting) return;
+                const email = document.getElementById('loginEmail').value.trim();
+                const password = document.getElementById('loginPassword').value;
+                setButtonLoading(loginBtn, 'Signing In...');
+                try {
+                    await login(email, password);
+                    showToast('Login successful! Redirecting...', 'success', 2500);
+                    setTimeout(redirectToApp, 1500);
+                } catch (err) {
+                    console.error('Login error:', err);
+                    if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-email') {
+                        showToast('Invalid email address.', 'error');
+                    } else if (err.code === 'auth/wrong-password') {
+                        showToast('Wrong password. Please try again.', 'error');
+                    } else if (err.code === 'auth/too-many-requests') {
+                        showToast('Too many attempts. Try again later.', 'warning');
+                    } else {
+                        showToast('Network error. Please check your connection.', 'error');
+                    }
+                } finally {
+                    resetButton(loginBtn);
+                }
+            });
+
+            signupForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (isSubmitting) return;
+                const name = document.getElementById('signupName').value.trim();
+                const email = document.getElementById('signupEmail').value.trim();
+                const password = document.getElementById('signupPassword').value;
+                const confirmPassword = document.getElementById('signupConfirmPassword').value;
+                if (password !== confirmPassword) {
+                    showToast('Passwords do not match.', 'error');
+                    return;
+                }
+                if (password.length < 6) {
+                    showToast('Password must be at least 6 characters.', 'warning');
+                    return;
+                }
+                setButtonLoading(signupBtn, 'Creating Account...');
+                try {
+                    await signup(name, email, password);
+                    showToast('Account created! Redirecting...', 'success', 2500);
+                    setTimeout(redirectToApp, 1500);
+                } catch (err) {
+                    console.error('Signup error:', err);
+                    if (err.code === 'auth/email-already-in-use') {
+                        showToast('Email already in use.', 'error');
+                    } else if (err.code === 'auth/invalid-email') {
+                        showToast('Invalid email address.', 'error');
+                    } else if (err.code === 'auth/weak-password') {
+                        showToast('Password is too weak.', 'warning');
+                    } else {
+                        showToast('Network error. Please try again.', 'error');
+                    }
+                } finally {
+                    resetButton(signupBtn);
+                }
+            });
+
+            async function handleGoogleAuth(btn) {
+                if (isSubmitting) return;
+                setButtonLoading(btn, 'Connecting...');
+                try {
+                    await googleLogin();
+                    showToast('Signed in with Google! Redirecting...', 'success', 2500);
+                    setTimeout(redirectToApp, 1500);
+                } catch (err) {
+                    console.error('Google auth error:', err);
+                    if (err.code === 'auth/popup-closed-by-user') {
+                        showToast('Sign-in popup closed.', 'warning');
+                    } else if (err.code === 'auth/cancelled-popup-request') {
+                        // ignore
+                    } else {
+                        showToast('Could not sign in with Google.', 'error');
+                    }
+                } finally {
+                    resetButton(btn);
+                }
+            }
+
+            googleLoginBtn.addEventListener('click', () => handleGoogleAuth(googleLoginBtn));
+            googleSignupBtn.addEventListener('click', () => handleGoogleAuth(googleSignupBtn));
+
+            forgotPasswordLink.addEventListener('click', async (e) => {
+                e.preventDefault();
+                if (isSubmitting) return;
+                const email = document.getElementById('loginEmail').value.trim();
+                if (!email || !email.includes('@')) {
+                    showToast('Please enter your email address first.', 'warning');
+                    return;
+                }
+                setButtonLoading(loginBtn, 'Sending...');
+                try {
+                    await forgotPassword(email);
+                    showToast('Password reset email sent! Check your inbox.', 'success', 4000);
+                } catch (err) {
+                    console.error('Forgot password error:', err);
+                    if (err.code === 'auth/user-not-found') {
+                        showToast('No account found with that email.', 'error');
+                    } else {
+                        showToast('Error sending reset email.', 'error');
+                    }
+                } finally {
+                    resetButton(loginBtn);
+                }
+            });
+
+            function initParticles() {
+                if (window.innerWidth < 850) return;
+                const canvas = particlesCanvas;
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                const maxParticles = 45;
+                let animFrameId;
+
+                function resize() {
+                    const rect = heroSection.getBoundingClientRect();
+                    canvas.width = rect.width;
+                    canvas.height = rect.height;
+                }
+
+                function createParticle() {
+                    return {
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height,
+                        radius: Math.random() * 2.2 + 0.6,
+                        speedX: (Math.random() - 0.5) * 0.35,
+                        speedY: (Math.random() - 0.5) * 0.35 - 0.25,
+                        opacity: Math.random() * 0.45 + 0.1,
+                        pulse: Math.random() * Math.PI * 2,
+                        pulseSpeed: Math.random() * 0.015 + 0.006,
+                    };
+                }
+
+                function initParticlesArray() {
+                    particles = [];
+                    for (let i = 0; i < maxParticles; i++) particles.push(createParticle());
+                }
+
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    const isDark = html.getAttribute('data-theme') === 'dark';
+                    const particleColor = isDark ? '255, 255, 255' : '108, 99, 255';
+                    particles.forEach(p => {
+                        p.x += p.speedX;
+                        p.y += p.speedY;
+                        p.pulse += p.pulseSpeed;
+                        if (p.x < -10) p.x = canvas.width + 10;
+                        if (p.x > canvas.width + 10) p.x = -10;
+                        if (p.y < -10) p.y = canvas.height + 10;
+                        if (p.y > canvas.height + 10) p.y = -10;
+                        const alpha = p.opacity + Math.sin(p.pulse) * 0.15;
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(${particleColor}, ${Math.max(0.03, alpha)})`;
+                        ctx.fill();
+                    });
+                    for (let i = 0; i < particles.length; i++) {
+                        for (let j = i + 1; j < particles.length; j++) {
+                            const dx = particles[i].x - particles[j].x;
+                            const dy = particles[i].y - particles[j].y;
+                            const dist = Math.sqrt(dx * dx + dy * dy);
+                            if (dist < 90) {
+                                const connColor = isDark ? '255, 255, 255' : '108, 99, 255';
+                                ctx.beginPath();
+                                ctx.moveTo(particles[i].x, particles[i].y);
+                                ctx.lineTo(particles[j].x, particles[j].y);
+                                ctx.strokeStyle = `rgba(${connColor}, ${0.03 * (1 - dist / 90)})`;
+                                ctx.lineWidth = 0.4;
+                                ctx.stroke();
+                            }
+                        }
+                    }
+                    animFrameId = requestAnimationFrame(animate);
+                }
+
+                resize();
+                initParticlesArray();
+                animate();
+                window.addEventListener('resize', () => { resize(); initParticlesArray(); });
+            }
+
+            function animateStats() {
+                if (statsAnimated) return;
+                statsAnimated = true;
+                const statValues = document.querySelectorAll('.hero-stat-value[data-count]');
+                statValues.forEach(el => {
+                    const target = parseInt(el.getAttribute('data-count'));
+                    const suffix = el.getAttribute('data-suffix') || '';
+                    const duration = 1800;
+                    const startTime = performance.now();
+                    function update(currentTime) {
+                        const elapsed = currentTime - startTime;
+                        const progress = Math.min(elapsed / duration, 1);
+                        const eased = 1 - Math.pow(1 - progress, 3);
+                        const current = Math.round(eased * target);
+                        el.textContent = current.toLocaleString() + suffix;
+                        if (progress < 1) requestAnimationFrame(update);
+                        else el.textContent = target.toLocaleString() + suffix;
+                    }
+                    requestAnimationFrame(update);
+                });
+            }
+
+            const statsObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        animateStats();
+                        statsObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.5 });
+
+            const statsContainer = document.querySelector('.hero-stats');
+            if (statsContainer) statsObserver.observe(statsContainer);
+            setTimeout(() => { if (!statsAnimated && statsContainer) animateStats(); }, 1200);
+
+            function init() {
+                initParticles();
+                switchTab('login');
+                html.setAttribute('data-theme', savedTheme);
+                if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                    authCard.style.animation = 'none';
+                    document.querySelectorAll('.blob').forEach(b => b.style.animation = 'none');
+                }
+            }
+
+            init();
+            console.log('🔥 Track U Auth with Firebase ready');
+        })();
+    </script>
+</body>
+</html>
