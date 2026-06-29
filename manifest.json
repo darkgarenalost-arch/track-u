@@ -1,14 +1,23 @@
 {
-  "name": "Track",
-  "short_name": "Track",
+  "name": "Track U",
+  "short_name": "Track U",
+  "description": "AI powered productivity and habit tracking app.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#7c5cff",
+  "lang": "en",
+  "categories": [
+    "productivity",
+    "lifestyle"
+  ],
   "icons": [
     {
-      "src": "logo.png",
+      "src": "/logo.png",
       "sizes": "512x512",
       "type": "image/png"
     }
-  ],
-  "theme_color": "#0a0a0f",
-  "background_color": "#0a0a0f",
-  "display": "standalone"
+  ]
 }
