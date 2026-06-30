@@ -8,18 +8,6 @@ window.TRACK_U_CONFIG = {
     appId: "1:780812482768:web:626ebf0789d1730b1146d5",
     measurementId: "G-PL2DEWLQET"
   },
-
-  razorpay: {
-    keyId: "rzp_test_T7sRxGHqvC0t46",
-    planId: "plan_T7sRJklxRHEWUF",
-    priceLabel: "INR 99/month"
-  },
-
-  endpoints: {
-    createSubscription: "/api/createSubscription",
-    cancelSubscription: "/api/cancelSubscription"
-  }
-};  },
   razorpay: {
     keyId: "rzp_test_T7sRxGHqvC0t46",
     planId: "plan_T7sRJklxRHEWUF",

@@ -1466,7 +1466,16 @@ canvas { max-width: 100%; }
     <div class="page-header">
       <div class="header-left"><h1>Statistics</h1><p>Deep dive into your data</p></div>
     </div>
-     <button class="btn btn-primary" data-upgrade-trigger>Upgrade - INR 99/month</button>
+    <div class="premium-gate" data-premium-gate="stats">
+      <span class="premium-pill">Premium</span>
+      <h2>Unlock Advanced Statistics</h2>
+      <p>See completion velocity, strongest time windows, category breakdowns, and previous-period comparisons.</p>
+      <div class="premium-features">
+        <div class="premium-feature">Average completion and focus consistency</div>
+        <div class="premium-feature">Best day and category performance</div>
+        <div class="premium-feature">Period-over-period comparisons</div>
+      </div>
+      <button class="btn btn-primary" data-upgrade-trigger>Upgrade - INR 99/month</button>
     </div>
     <div class="grid-3" id="statsGrid"></div>
   </section>
@@ -3399,7 +3408,7 @@ document.addEventListener('DOMContentLoaded', init);
   window.isPremiumActive = isPremiumActive;
 
   function setPremiumVisibility() {
-    ['progress','heatmap','weekly'].forEach(id => {
+    ['progress','heatmap','stats','weekly'].forEach(id => {
       const section = document.getElementById('section-' + id);
       if (!section) return;
       const locked = !isPremiumActive();
