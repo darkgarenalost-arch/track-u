@@ -3408,7 +3408,7 @@ document.addEventListener('DOMContentLoaded', init);
   window.isPremiumActive = isPremiumActive;
 
   function setPremiumVisibility() {
-    ['progress','heatmap','stats','weekly'].forEach(id => {
+    ['progress','heatmap','weekly'].forEach(id => {
       const section = document.getElementById('section-' + id);
       if (!section) return;
       const locked = !isPremiumActive();
