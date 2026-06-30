@@ -8,6 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Daily Progress Tracker</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 /* =========================================================
@@ -1032,12 +1033,140 @@ canvas { max-width: 100%; }
   font-weight: 800;
 }
 
+/* =========================================================
+   PREMIUM, ANALYTICS & LEADERBOARD ENHANCEMENTS
+   ========================================================= */
+.premium-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 10px; border-radius: 999px;
+  border: 1px solid rgba(245,158,11,0.35);
+  background: rgba(245,158,11,0.12);
+  color: var(--accent-4); font-size: 11px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.premium-gate {
+  display: none; margin-bottom: 20px;
+  background: linear-gradient(135deg, rgba(108,99,255,0.18), rgba(245,158,11,0.14)), var(--bg-card);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  box-shadow: var(--neu-raised-hover);
+  padding: 26px;
+  overflow: hidden;
+  position: relative;
+}
+.premium-gate::after {
+  content: ''; position: absolute; width: 240px; height: 240px; right: -90px; top: -90px;
+  background: radial-gradient(circle, rgba(245,158,11,0.28), transparent 65%);
+  pointer-events: none;
+}
+.premium-gate.open { display: block; }
+.premium-gate h2 { font-size: 26px; margin: 10px 0 8px; letter-spacing: 0; }
+.premium-gate p { color: var(--text-secondary); line-height: 1.6; max-width: 680px; font-size: 14px; }
+.premium-features { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 18px 0; }
+.premium-feature {
+  padding: 12px; border-radius: var(--radius-xs);
+  background: rgba(255,255,255,0.07); border: 1px solid var(--border);
+  color: var(--text-secondary); font-size: 12px;
+}
+.premium-content.locked { display: none; }
+.analytics-toolbar, .mini-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap; margin-bottom: 14px;
+}
+.metric-toggles, .segmented {
+  display: flex; gap: 6px; flex-wrap: wrap;
+}
+.metric-toggle, .seg-btn {
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  border-radius: 999px;
+  box-shadow: var(--neu-raised-sm);
+  padding: 7px 12px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  transition: all var(--transition);
+}
+.metric-toggle.active, .seg-btn.active {
+  color: #fff;
+  border-color: rgba(108,99,255,0.42);
+  background: var(--gradient-1);
+  box-shadow: var(--neu-raised-sm), 0 0 18px var(--accent-glow);
+}
+.insight-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; margin-bottom: 20px; }
+.insight-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--neu-raised-sm);
+  padding: 16px;
+}
+.insight-label { color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+.insight-value { margin-top: 6px; font-size: 24px; font-weight: 800; font-family: var(--font-mono); }
+.insight-sub { color: var(--text-secondary); font-size: 12px; margin-top: 6px; line-height: 1.4; }
+.trend-up { color: var(--accent-3); }
+.trend-down { color: var(--accent-2); }
+.heatmap-summary, .profile-stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px; margin-bottom: 16px;
+}
+.heatmap-cell[data-level="5"] { background: #65d889; box-shadow: 0 0 9px rgba(101,216,137,0.58); }
+.heatmap-detail {
+  margin-top: 12px; padding: 12px 14px; border-radius: var(--radius-xs);
+  background: var(--bg-card); border: 1px solid var(--border);
+  color: var(--text-secondary); font-size: 12px;
+}
+.weekly-narrative {
+  font-size: 14px; line-height: 1.8; color: var(--text-secondary);
+}
+.weekly-callout {
+  padding: 14px; border-radius: var(--radius-xs);
+  background: rgba(108,99,255,0.12); border: 1px solid rgba(108,99,255,0.22);
+  margin-bottom: 10px;
+}
+.leaderboard-list { display: flex; flex-direction: column; gap: 9px; }
+.leaderboard-row {
+  display: grid; grid-template-columns: 44px 1fr auto auto;
+  align-items: center; gap: 12px;
+  padding: 12px 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  box-shadow: var(--neu-raised-sm);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.leaderboard-row:hover, .leaderboard-row.current-user {
+  transform: translateY(-1px);
+  border-color: var(--border-strong);
+  box-shadow: var(--neu-raised-hover);
+}
+.leaderboard-rank { font-family: var(--font-mono); font-weight: 800; color: var(--accent); }
+.player-name { font-weight: 800; }
+.player-sub { color: var(--text-muted); font-size: 11px; margin-top: 2px; }
+.profile-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.copy-chip {
+  display: inline-flex; gap: 8px; align-items: center;
+  border: 1px solid var(--border); background: var(--bg-card);
+  border-radius: 999px; padding: 7px 10px; font-size: 11px;
+  color: var(--text-secondary); font-family: var(--font-mono);
+}
+.level-icon svg, .badge-icon svg { width: 32px; height: 32px; display: block; }
+.billing-status {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px; margin-bottom: 20px;
+}
+
 </style>
 
 <!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
 </head>
 <body>
 
@@ -1071,6 +1200,8 @@ canvas { max-width: 100%; }
     <div class="nav-item" data-section="weekly"><span class="nav-icon">📅</span> Weekly Review</div>
     <div class="nav-item" data-section="settings"><span class="nav-icon">⚙️</span> Settings</div>
   </div>
+    <div class="nav-item" data-section="leaderboard"><span class="nav-icon">#</span> Leaderboard</div>
+    <div class="nav-item" data-section="billing"><span class="nav-icon">Rs</span> Billing</div>
   <div class="sidebar-bottom">
     <div class="nav-item" id="themeToggleNav"><span class="nav-icon" id="themeIcon">☀️</span> <span id="themeLabel">Dark Mode</span></div>
   </div>
@@ -1240,6 +1371,18 @@ canvas { max-width: 100%; }
     <div class="page-header">
       <div class="header-left"><h1>Progress Graph</h1><p>Your consistency over time</p></div>
     </div>
+    <div class="premium-gate" data-premium-gate="progress">
+      <span class="premium-pill">Premium</span>
+      <h2>Unlock Progress Analytics</h2>
+      <p>Track completion, focus minutes, XP velocity, category mix, and trend changes across 7-day, 30-day, 90-day, and all-time views.</p>
+      <div class="premium-features">
+        <div class="premium-feature">Multi-metric timeline with tooltips</div>
+        <div class="premium-feature">Trend comparison vs previous period</div>
+        <div class="premium-feature">Deep statistics dashboard included</div>
+      </div>
+      <button class="btn btn-primary" data-upgrade-trigger>Upgrade - INR 99/month</button>
+    </div>
+    <div class="insight-grid premium-content" data-premium-content="progress" id="progressInsights"></div>
     <div class="card" style="margin-bottom:20px;">
       <div class="card-header">
         <div class="card-title"><span class="title-icon">📈</span> Consistency Score</div>
@@ -1268,6 +1411,18 @@ canvas { max-width: 100%; }
     <div class="page-header">
       <div class="header-left"><h1>Habit Heatmap</h1><p>365 days of activity</p></div>
     </div>
+    <div class="premium-gate" data-premium-gate="heatmap">
+      <span class="premium-pill">Premium</span>
+      <h2>Unlock Productivity Heatmap</h2>
+      <p>Explore a full contribution-style calendar with activity intensity, streak summaries, filters, and tap details.</p>
+      <div class="premium-features">
+        <div class="premium-feature">Intensity based on productivity volume</div>
+        <div class="premium-feature">Current and best streak summaries</div>
+        <div class="premium-feature">Category/date detail panel</div>
+      </div>
+      <button class="btn btn-primary" data-upgrade-trigger>Upgrade - INR 99/month</button>
+    </div>
+    <div class="heatmap-summary premium-content" data-premium-content="heatmap" id="heatmapSummary"></div>
     <div class="card">
       <div class="card-header">
         <div class="card-title"><span class="title-icon">🗓️</span> Activity</div>
@@ -1291,6 +1446,7 @@ canvas { max-width: 100%; }
           </div>
         </div>
       </div>
+      <div class="heatmap-detail premium-content" data-premium-content="heatmap" id="heatmapDetail">Select a day to inspect activity details.</div>
     </div>
   </section>
 
@@ -1309,6 +1465,17 @@ canvas { max-width: 100%; }
   <section id="section-stats" class="section-hidden">
     <div class="page-header">
       <div class="header-left"><h1>Statistics</h1><p>Deep dive into your data</p></div>
+    </div>
+    <div class="premium-gate" data-premium-gate="stats">
+      <span class="premium-pill">Premium</span>
+      <h2>Unlock Advanced Statistics</h2>
+      <p>See completion velocity, strongest time windows, category breakdowns, and previous-period comparisons.</p>
+      <div class="premium-features">
+        <div class="premium-feature">Average completion and focus consistency</div>
+        <div class="premium-feature">Best day and category performance</div>
+        <div class="premium-feature">Period-over-period comparisons</div>
+      </div>
+      <button class="btn btn-primary" data-upgrade-trigger>Upgrade - INR 99/month</button>
     </div>
     <div class="grid-3" id="statsGrid"></div>
   </section>
@@ -1370,6 +1537,17 @@ canvas { max-width: 100%; }
     <div class="page-header">
       <div class="header-left"><h1>Weekly Review</h1><p>This week at a glance</p></div>
     </div>
+    <div class="premium-gate" data-premium-gate="weekly">
+      <span class="premium-pill">Premium</span>
+      <h2>Unlock Weekly Review</h2>
+      <p>Get a narrative review of your wins, dips, best day, XP growth, and personalized next-week recommendations.</p>
+      <div class="premium-features">
+        <div class="premium-feature">Narrative performance summary</div>
+        <div class="premium-feature">Behavior-based recommendations</div>
+        <div class="premium-feature">Shareable text export</div>
+      </div>
+      <button class="btn btn-primary" data-upgrade-trigger>Upgrade - INR 99/month</button>
+    </div>
     <div class="card" style="margin-bottom:20px;">
       <div class="card-title" style="margin-bottom:16px;"><span class="title-icon">📅</span> This Week</div>
       <div class="weekly-days" id="weeklyDays"></div>
@@ -1383,6 +1561,58 @@ canvas { max-width: 100%; }
         <div class="card-title" style="margin-bottom:12px;"><span class="title-icon">🎯</span> Weekly Goals</div>
         <div id="weeklyGoals" style="font-size:13px;color:var(--text-secondary);line-height:1.8;"></div>
       </div>
+    </div>
+  </section>
+
+  <!-- ========= LEADERBOARD ========= -->
+  <section id="section-leaderboard" class="section-hidden">
+    <div class="page-header">
+      <div class="header-left"><h1>Leaderboard</h1><p>Top 30 players by validated XP</p></div>
+      <div class="header-right">
+        <div class="copy-chip">Your ID: <span id="ownPlayerId">Sign in</span></div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:20px;">
+      <div class="analytics-toolbar">
+        <div class="card-title"><span class="title-icon">#</span> Player Search</div>
+        <div style="display:flex;gap:8px;flex:1;min-width:240px;justify-content:flex-end;">
+          <input type="text" class="search-input" id="playerSearchInput" placeholder="Enter Player ID" style="max-width:260px;">
+          <button class="btn btn-secondary" id="playerSearchBtn">Search</button>
+        </div>
+      </div>
+      <div class="heatmap-detail" id="playerSearchStatus">Search by Player ID to view public consistency, heatmap, and achievements.</div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="title-icon">#</span> Top 30</div>
+        <button class="btn btn-secondary" id="refreshLeaderboardBtn" style="font-size:12px;padding:6px 12px;">Refresh</button>
+      </div>
+      <div class="leaderboard-list" id="leaderboardList"></div>
+      <div class="heatmap-detail" id="ownRankPanel" style="display:none;"></div>
+    </div>
+  </section>
+
+  <!-- ========= BILLING ========= -->
+  <section id="section-billing" class="section-hidden">
+    <div class="page-header">
+      <div class="header-left"><h1>Billing</h1><p>Manage Track U Premium</p></div>
+    </div>
+    <div class="billing-status" id="billingStatus"></div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="title-icon">Rs</span> Premium Plan</div>
+        <span class="premium-pill">INR 99/month</span>
+      </div>
+      <div class="premium-features">
+        <div class="premium-feature">Weekly Review with recommendations</div>
+        <div class="premium-feature">Advanced Heatmap and streak detail</div>
+        <div class="premium-feature">Progress Analytics and statistics dashboard</div>
+      </div>
+      <div class="profile-actions">
+        <button class="btn btn-primary" id="upgradeBtn">Upgrade with Razorpay</button>
+        <button class="btn btn-secondary" id="cancelSubscriptionBtn">Cancel Subscription</button>
+      </div>
+      <div class="heatmap-detail" id="billingMessage">Subscription status is verified from Firestore data written by backend webhooks.</div>
     </div>
   </section>
 
@@ -1798,8 +2028,26 @@ canvas { max-width: 100%; }
     <div class="profile-modal-avatar" id="profileModalAvatar">👤</div>
     <div class="profile-modal-name" id="profileModalName">—</div>
     <div class="profile-modal-email" id="profileModalEmail">—</div>
+    <div class="copy-chip" style="justify-content:center;width:100%;margin-bottom:12px;">Player ID: <span id="profilePlayerId">Sign in</span></div>
+    <button class="btn btn-secondary" id="copyPlayerIdBtn" style="width:100%;margin-bottom:12px;">Copy Player ID</button>
     <div class="profile-modal-divider"></div>
     <button class="profile-modal-logout" id="profileModalLogoutBtn">🚪 Log Out</button>
+  </div>
+</div>
+
+<!-- PUBLIC PLAYER PROFILE MODAL -->
+<div class="modal-overlay" id="publicProfileModal">
+  <div class="modal" style="max-width:760px;">
+    <div class="modal-title" id="publicProfileTitle">Player Profile</div>
+    <div class="profile-stats" id="publicProfileStats"></div>
+    <div class="card" style="margin-bottom:14px;">
+      <div class="card-title" style="margin-bottom:12px;"><span class="title-icon">#</span> Public Heatmap</div>
+      <div class="heatmap-wrap"><div class="heatmap-grid" id="publicProfileHeatmap"></div></div>
+    </div>
+    <div class="badges-grid" id="publicProfileBadges"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="closePublicProfileBtn">Close</button>
+    </div>
   </div>
 </div>
 
@@ -3086,6 +3334,593 @@ function init() {
 document.addEventListener('DOMContentLoaded', init);
 </script>
 
+<script>
+/* =========================================================
+   PREMIUM UPGRADE ENHANCEMENTS
+   ========================================================= */
+(function() {
+  window.trackUContext = window.trackUContext || { currentUser: null, db: null };
+  const cfg = window.TRACK_U_CONFIG || {};
+  const activeMetrics = { completion: true, xp: true, focus: true };
+
+  LEVELS.length = 0;
+  for (let level = 1; level <= 100; level++) {
+    LEVELS.push({ level, xp: Math.round(80 * Math.pow(level - 1, 1.72)) });
+  }
+
+  function svgBadge(kind) {
+    const colors = {
+      spark: ['#6c63ff', '#8b5cf6'],
+      flame: ['#ff6b6b', '#f59e0b'],
+      shield: ['#22c55e', '#4ade80'],
+      crown: ['#f59e0b', '#facc15'],
+      focus: ['#3b82f6', '#00f2fe'],
+      star: ['#8b5cf6', '#ec4899']
+    }[kind] || ['#6c63ff', '#8b5cf6'];
+    return `<svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="g-${kind}" x1="0" x2="1" y1="0" y2="1"><stop stop-color="${colors[0]}"/><stop offset="1" stop-color="${colors[1]}"/></linearGradient></defs><path d="M32 4l22 10v16c0 15-9 25-22 30C19 55 10 45 10 30V14L32 4z" fill="url(#g-${kind})" opacity=".95"/><path d="M32 15l5 10 11 2-8 8 2 11-10-5-10 5 2-11-8-8 11-2 5-10z" fill="rgba(255,255,255,.88)"/></svg>`;
+  }
+  window.getLevelIcon = function(level) {
+    if (level >= 90) return svgBadge('crown');
+    if (level >= 70) return svgBadge('star');
+    if (level >= 50) return svgBadge('shield');
+    if (level >= 30) return svgBadge('flame');
+    if (level >= 15) return svgBadge('focus');
+    return svgBadge('spark');
+  };
+
+  BADGES.length = 0;
+  [
+    ['first_task','spark','First Step','Complete your first task',s=>s.totalCompletions>=1],
+    ['streak_3','flame','3 Day Streak','Hold a 3 day streak',s=>s.currentStreak>=3],
+    ['streak_7','shield','Week Warrior','Hold a 7 day streak',s=>s.currentStreak>=7],
+    ['streak_14','star','Fortnight Force','Hold a 14 day streak',s=>s.currentStreak>=14],
+    ['streak_30','crown','Monthly Master','Hold a 30 day streak',s=>s.currentStreak>=30],
+    ['streak_60','crown','Discipline Engine','Hold a 60 day streak',s=>s.currentStreak>=60],
+    ['tasks_10','spark','Getting Started','Complete 10 tasks',s=>s.totalCompletions>=10],
+    ['tasks_50','focus','Momentum Maker','Complete 50 tasks',s=>s.totalCompletions>=50],
+    ['tasks_100','flame','Century Club','Complete 100 tasks',s=>s.totalCompletions>=100],
+    ['tasks_500','shield','Systems Builder','Complete 500 tasks',s=>s.totalCompletions>=500],
+    ['tasks_1000','crown','Compounding Legend','Complete 1000 tasks',s=>s.totalCompletions>=1000],
+    ['focus_10','focus','Deep Work Starter','Log 10 focus sessions',s=>(s.pomSessions||0)>=10],
+    ['focus_50','focus','Focus Specialist','Log 50 focus sessions',s=>(s.pomSessions||0)>=50],
+    ['perfect_week','shield','Perfect Week','Reach a perfect week',s=>s.perfectWeeks>=1],
+    ['consistency_master','star','Consistency Master','Score over 80 for 30 days',s=>s.highScoreDays>=30],
+    ['early_bird','spark','Early Start','Complete a task before 8am',s=>s.earlyBird],
+    ['night_owl','star','Night Finish','Complete a task after 10pm',s=>s.nightOwl],
+    ['level_10','shield','Level 10','Reach level 10',s=>s.level>=10],
+    ['level_25','flame','Level 25','Reach level 25',s=>s.level>=25],
+    ['level_50','star','Level 50','Reach level 50',s=>s.level>=50],
+    ['level_100','crown','Level 100','Reach the level cap',s=>s.level>=100],
+    ['leader_top_30','crown','Top 30 Player','Reach the leaderboard top 30',s=>s.leaderboardRank && s.leaderboardRank<=30]
+  ].forEach(([id, icon, name, desc, condition]) => BADGES.push({ id, icon: svgBadge(icon), name, desc, condition }));
+
+  function currentSubscription() {
+    return state.subscription || { status: 'free' };
+  }
+  function isPremiumActive() {
+    const sub = currentSubscription();
+    const active = ['active', 'authenticated', 'charged'].includes(String(sub.status || '').toLowerCase());
+    if (!active) return false;
+    if (!sub.currentEnd && !sub.expiresAt && !sub.renewsAt) return true;
+    const end = new Date(sub.currentEnd || sub.expiresAt || sub.renewsAt);
+    return Number.isNaN(end.getTime()) || end > new Date();
+  }
+  window.isPremiumActive = isPremiumActive;
+
+  function setPremiumVisibility() {
+    ['progress','heatmap','stats','weekly'].forEach(id => {
+      const section = document.getElementById('section-' + id);
+      if (!section) return;
+      const locked = !isPremiumActive();
+      const gate = section.querySelector('[data-premium-gate]');
+      if (gate) gate.classList.toggle('open', locked);
+      Array.from(section.children).forEach(child => {
+        if (child.classList.contains('page-header') || child === gate) return;
+        child.style.display = locked ? 'none' : '';
+      });
+    });
+  }
+  window.updatePremiumLocks = setPremiumVisibility;
+
+  function rangeDays() {
+    if (state.activeChartRange === 'week') return 7;
+    if (state.activeChartRange === 'month') return 30;
+    if (state.activeChartRange === 'quarter') return 90;
+    return Math.max(90, Object.keys(state.history || {}).length || 90);
+  }
+  function dayRows(days = rangeDays()) {
+    const rows = [];
+    for (let i = days - 1; i >= 0; i--) {
+      const key = subtractDays(i);
+      const h = state.history[key] || { completed: [], total: 0, score: 0, xp: 0 };
+      const completed = (h.completed || []).length;
+      rows.push({
+        key,
+        label: new Date(key + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        completion: h.total > 0 ? Math.round(completed / h.total * 100) : 0,
+        tasks: completed,
+        xp: h.xp || 0,
+        focus: (h.focusMinutes || 0)
+      });
+    }
+    return rows;
+  }
+  function sum(rows, field) { return rows.reduce((n, r) => n + (r[field] || 0), 0); }
+  function trend(now, prev) {
+    if (!prev) return now ? '+100%' : '0%';
+    const pct = Math.round(((now - prev) / prev) * 100);
+    return `${pct >= 0 ? '+' : ''}${pct}%`;
+  }
+  function periodInsights() {
+    const days = rangeDays();
+    const current = dayRows(days);
+    const previous = [];
+    for (let i = days * 2 - 1; i >= days; i--) {
+      const key = subtractDays(i);
+      const h = state.history[key] || { completed: [], total: 0, xp: 0 };
+      previous.push({
+        completion: h.total > 0 ? Math.round((h.completed || []).length / h.total * 100) : 0,
+        xp: h.xp || 0,
+        tasks: (h.completed || []).length,
+        focus: h.focusMinutes || 0
+      });
+    }
+    const avg = Math.round(sum(current, 'completion') / Math.max(current.length, 1));
+    const prevAvg = Math.round(sum(previous, 'completion') / Math.max(previous.length, 1));
+    return {
+      avg,
+      xp: sum(current, 'xp'),
+      tasks: sum(current, 'tasks'),
+      focus: sum(current, 'focus'),
+      completionTrend: trend(avg, prevAvg),
+      xpTrend: trend(sum(current, 'xp'), sum(previous, 'xp'))
+    };
+  }
+
+  renderXP = function() {
+    const xp = state.stats.totalXP;
+    const lvl = getLevel(xp);
+    state.stats.level = lvl;
+    const { curXP, nextXP } = getLevelXPRange(lvl);
+    const pct = nextXP > curXP ? ((xp - curXP) / (nextXP - curXP) * 100) : 100;
+    document.getElementById('xpValue').textContent = xp;
+    document.getElementById('levelBadge').innerHTML = `<span class="level-icon">${getLevelIcon(lvl)}</span> Level ${lvl}`;
+    document.getElementById('xpCurrent').textContent = `${xp} XP`;
+    document.getElementById('xpNext').textContent = nextXP > curXP ? `${Math.max(0, nextXP - xp)} XP to next level` : 'Max level!';
+    document.getElementById('xpBarFill').style.width = `${Math.min(pct, 100)}%`;
+  };
+
+  const originalCheckAchievements = checkAchievements;
+  checkAchievements = function() {
+    const hour = new Date().getHours();
+    if (hour >= 22) state.stats.nightOwl = true;
+    originalCheckAchievements();
+  };
+
+  renderProgressCharts = function() {
+    if (!isPremiumActive()) { setPremiumVisibility(); return; }
+    const rows = dayRows();
+    const labels = rows.map(r => r.label);
+    const insights = periodInsights();
+    const insightEl = document.getElementById('progressInsights');
+    if (insightEl) {
+      insightEl.innerHTML = [
+        ['Completion', `${insights.avg}%`, `${insights.completionTrend} vs previous period`],
+        ['Tasks Done', insights.tasks, 'Completed in selected range'],
+        ['XP Earned', insights.xp, `${insights.xpTrend} vs previous period`],
+        ['Focus Minutes', insights.focus, 'From completed focus sessions']
+      ].map(([label, value, sub]) => `<div class="insight-card"><div class="insight-label">${label}</div><div class="insight-value">${value}</div><div class="insight-sub">${sub}</div></div>`).join('');
+    }
+    const colors = {
+      completion: ['#6c63ff', 'rgba(108,99,255,0.14)', 'Completion %'],
+      xp: ['#f59e0b', 'rgba(245,158,11,0.12)', 'XP'],
+      focus: ['#22c55e', 'rgba(34,197,94,0.12)', 'Focus min']
+    };
+    const datasets = Object.keys(activeMetrics).filter(k => activeMetrics[k]).map(k => ({
+      label: colors[k][2],
+      data: rows.map(r => r[k]),
+      borderColor: colors[k][0],
+      backgroundColor: colors[k][1],
+      fill: k === 'completion',
+      tension: 0.38,
+      pointRadius: 3,
+      pointHoverRadius: 6
+    }));
+    const chartDefaults = {
+      responsive: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { labels: { color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary') } },
+        tooltip: {
+          backgroundColor: 'rgba(18,18,26,0.95)',
+          borderColor: 'rgba(124,92,252,0.3)',
+          borderWidth: 1,
+          titleColor: '#f0f0ff',
+          bodyColor: 'rgba(240,240,255,0.8)'
+        }
+      },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: 'rgba(150,150,175,0.8)', font: { size: 11 }, maxRotation: 0 } },
+        y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: 'rgba(150,150,175,0.8)', font: { size: 11 } }, beginAtZero: true }
+      }
+    };
+    if (progressChart) progressChart.destroy();
+    const pCtx = document.getElementById('progressChart');
+    if (pCtx) progressChart = new Chart(pCtx, { type: 'line', data: { labels, datasets }, options: chartDefaults });
+    if (streakChart) streakChart.destroy();
+    const sCtx = document.getElementById('streakChart');
+    if (sCtx) {
+      let run = 0;
+      const streakRows = rows.map(r => { run = r.tasks > 0 ? run + 1 : 0; return run; });
+      streakChart = new Chart(sCtx, { type: 'bar', data: { labels, datasets: [{ label: 'Active streak', data: streakRows, backgroundColor: 'rgba(34,197,94,0.38)', borderColor: '#22c55e', borderWidth: 2, borderRadius: 5 }] }, options: chartDefaults });
+    }
+    if (completionChart) completionChart.destroy();
+    const cCtx = document.getElementById('completionChart');
+    if (cCtx) completionChart = new Chart(cCtx, { type: 'doughnut', data: { labels: ['Completed', 'Open'], datasets: [{ data: [insights.avg, Math.max(0, 100 - insights.avg)], backgroundColor: ['rgba(108,99,255,0.86)', 'rgba(255,255,255,0.08)'], borderColor: ['#6c63ff', 'transparent'], borderWidth: 2 }] }, options: { responsive: true, cutout: '72%', plugins: { legend: { display: false } } } });
+  };
+
+  renderHeatmap = function() {
+    const grid = document.getElementById('heatmapGrid');
+    const months = document.getElementById('heatmapMonths');
+    if (!grid) return;
+    if (!isPremiumActive()) { setPremiumVisibility(); return; }
+    grid.innerHTML = '';
+    if (months) months.innerHTML = '';
+    const summary = document.getElementById('heatmapSummary');
+    if (summary) {
+      const rows = dayRows(365);
+      const best = rows.reduce((m, r) => Math.max(m, r.tasks + Math.ceil(r.focus / 25) + Math.ceil(r.xp / 20)), 0);
+      summary.innerHTML = [
+        ['Current Streak', `${state.stats.currentStreak}d`, 'Active productivity chain'],
+        ['Best Streak', `${state.stats.longestStreak}d`, 'Personal record'],
+        ['Best Volume Day', best, 'Task/focus/XP intensity score']
+      ].map(([label,value,sub]) => `<div class="insight-card"><div class="insight-label">${label}</div><div class="insight-value">${value}</div><div class="insight-sub">${sub}</div></div>`).join('');
+    }
+    const end = new Date();
+    const start = new Date();
+    start.setDate(end.getDate() - 364);
+    while (start.getDay() !== 0) start.setDate(start.getDate() - 1);
+    let cur = new Date(start), weekCol = null, lastMonth = -1;
+    while (cur <= end) {
+      if (cur.getDay() === 0) {
+        weekCol = document.createElement('div');
+        weekCol.className = 'heatmap-col';
+        grid.appendChild(weekCol);
+        if (months && cur.getMonth() !== lastMonth) {
+          const span = document.createElement('span');
+          span.textContent = cur.toLocaleString('en-US', { month: 'short' });
+          span.style.minWidth = '36px';
+          months.appendChild(span);
+          lastMonth = cur.getMonth();
+        }
+      }
+      const key = dateKey(cur);
+      const h = state.history[key];
+      const completed = h ? (h.completed || []).length : 0;
+      const volume = completed + Math.ceil(((h && h.focusMinutes) || 0) / 25) + Math.ceil(((h && h.xp) || 0) / 20);
+      const level = volume === 0 ? 0 : Math.min(5, Math.max(1, Math.ceil(volume / 2)));
+      const cell = document.createElement('button');
+      cell.type = 'button';
+      cell.className = 'heatmap-cell';
+      if (level) cell.dataset.level = level;
+      cell.title = `${key}: ${completed}/${(h && h.total) || 0} tasks, ${(h && h.xp) || 0} XP`;
+      cell.addEventListener('click', () => {
+        const detail = document.getElementById('heatmapDetail');
+        if (detail) detail.textContent = `${key}: ${completed} tasks completed, ${(h && h.total) || 0} planned, ${(h && h.xp) || 0} XP, ${((h && h.focusMinutes) || 0)} focus minutes.`;
+      });
+      if (weekCol) weekCol.appendChild(cell);
+      cur.setDate(cur.getDate() + 1);
+    }
+  };
+
+  renderBadges = function() {
+    const grid = document.getElementById('badgesGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    BADGES.forEach(b => {
+      const unlocked = !!state.stats['badge_' + b.id];
+      const isNew = (state.stats.newBadges || []).includes(b.id);
+      const card = document.createElement('div');
+      card.className = 'badge-card ' + (unlocked ? 'unlocked' : 'locked');
+      card.innerHTML = `${isNew && unlocked ? '<div class="badge-new">NEW</div>' : ''}<div class="badge-icon">${b.icon}</div><div class="badge-name">${b.name}</div><div class="badge-desc">${b.desc}</div>`;
+      grid.appendChild(card);
+    });
+  };
+
+  renderStats = function() {
+    const grid = document.getElementById('statsGrid');
+    if (!grid) return;
+    if (!isPremiumActive()) { setPremiumVisibility(); return; }
+    const rows30 = dayRows(30);
+    const rows7 = dayRows(7);
+    const category = {};
+    Object.values(state.history || {}).forEach(h => (h.completed || []).forEach(id => {
+      const task = state.tasks.find(t => t.id === id);
+      const key = (task && task.category) || 'uncategorized';
+      category[key] = (category[key] || 0) + 1;
+    }));
+    const bestCategory = Object.entries(category).sort((a,b)=>b[1]-a[1])[0];
+    const bestDay = rows30.reduce((best, row) => row.tasks > best.tasks ? row : best, { tasks: -1, label: 'None' });
+    const avgCompletion = Math.round(sum(rows30, 'completion') / Math.max(rows30.length, 1));
+    const weeklyCompletion = Math.round(sum(rows7, 'completion') / Math.max(rows7.length, 1));
+    const data = [
+      ['Total Tasks', state.tasks.length, 'Created habits and routines'],
+      ['Total Completions', state.stats.totalCompletions, 'All-time finished tasks'],
+      ['Current Streak', `${state.stats.currentStreak} days`, 'Consistency chain'],
+      ['Longest Streak', `${state.stats.longestStreak} days`, 'Personal record'],
+      ['30D Average', `${avgCompletion}%`, 'Average completion rate'],
+      ['7D Average', `${weeklyCompletion}%`, 'This week completion rate'],
+      ['Best Day', bestDay.label, `${Math.max(0, bestDay.tasks)} completed tasks`],
+      ['Best Category', bestCategory ? bestCategory[0] : 'None', bestCategory ? `${bestCategory[1]} completions` : 'Add categorized tasks'],
+      ['Focus Sessions', state.stats.pomSessions || 0, 'Completed Pomodoro sessions']
+    ];
+    grid.innerHTML = data.map(([label,value,sub]) => `<div class="card"><div class="insight-label">${label}</div><div class="insight-value">${value}</div><div class="insight-sub">${sub}</div></div>`).join('');
+  };
+
+  renderWeekly = function() {
+    const container = document.getElementById('weeklyDays');
+    if (!container) return;
+    if (!isPremiumActive()) { setPremiumVisibility(); return; }
+    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const now = new Date();
+    const dow = now.getDay();
+    const weekStart = new Date(now);
+    weekStart.setDate(now.getDate() - dow + (dow === 0 ? -6 : 1));
+    container.innerHTML = '';
+    let wTotal = 0, wDone = 0, xp = 0, bestDay = 'None', bestPct = -1;
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(weekStart);
+      d.setDate(weekStart.getDate() + i);
+      const key = dateKey(d);
+      const h = state.history[key] || { completed: [], total: 0, xp: 0 };
+      const pct = h.total > 0 ? Math.round((h.completed || []).length / h.total * 100) : 0;
+      wTotal += h.total || 0;
+      wDone += (h.completed || []).length;
+      xp += h.xp || 0;
+      if (pct > bestPct) { bestPct = pct; bestDay = days[d.getDay()]; }
+      const div = document.createElement('div');
+      div.className = 'wday';
+      div.innerHTML = `<div class="wday-name">${days[d.getDay()]}</div><div class="wday-bar-wrap"><div class="wday-bar" style="height:${pct * 0.4}px;"></div></div><div class="wday-pct">${pct}%</div>`;
+      container.appendChild(div);
+    }
+    const pct = wTotal > 0 ? Math.round(wDone / wTotal * 100) : 0;
+    const hl = document.getElementById('weeklyHighlights');
+    const goals = document.getElementById('weeklyGoals');
+    if (hl) hl.innerHTML = `<div class="weekly-narrative"><div class="weekly-callout">You completed <strong>${wDone}</strong> of <strong>${wTotal}</strong> planned tasks this week and earned <strong>${xp} XP</strong>.</div><div>Your best day was <strong>${bestDay}</strong> at <strong>${Math.max(0, bestPct)}%</strong>. Your current streak is <strong>${state.stats.currentStreak} days</strong>.</div></div>`;
+    const recommendation = pct >= 80 ? 'Keep the plan stable next week and raise only one task difficulty.' : pct >= 50 ? 'Reduce low-value tasks and protect one daily focus block.' : 'Pick three anchor habits only, then rebuild the streak before expanding.';
+    if (goals) goals.innerHTML = `<div class="weekly-narrative"><div class="weekly-callout">${recommendation}</div><div>Next target: <strong>${Math.min(100, pct + 12)}%</strong> completion and <strong>${state.stats.totalXP + 150} XP</strong>.</div><button class="btn btn-secondary" id="copyWeeklyReviewBtn" style="margin-top:12px;">Copy Review</button></div>`;
+    const copy = document.getElementById('copyWeeklyReviewBtn');
+    if (copy) copy.addEventListener('click', () => navigator.clipboard.writeText(`Track U Weekly Review: ${wDone}/${wTotal} tasks, ${pct}% completion, ${xp} XP. Recommendation: ${recommendation}`).then(() => toast('Weekly review copied.', 'success')));
+  };
+
+  renderDashboardStats = (function(original) {
+    return function() {
+      original();
+      const lvl = getLevel(state.stats.totalXP);
+      const dash = document.getElementById('dashLevel');
+      if (dash) dash.innerHTML = `<span class="level-icon">${getLevelIcon(lvl)}</span> Level ${lvl}`;
+    };
+  })(renderDashboardStats);
+
+  const originalRender = render;
+  render = function() {
+    originalRender();
+    setPremiumVisibility();
+    renderBilling();
+    renderLeaderboard();
+    updatePlayerIds();
+  };
+
+  const originalBindEvents = bindEvents;
+  bindEvents = function() {
+    originalBindEvents();
+    const chartTabs = document.querySelector('[data-chart-range="all"]');
+    if (chartTabs && !document.querySelector('[data-chart-range="quarter"]')) {
+      const quarter = document.createElement('button');
+      quarter.className = 'tab-btn';
+      quarter.dataset.chartRange = 'quarter';
+      quarter.textContent = '90D';
+      quarter.addEventListener('click', () => {
+        document.querySelectorAll('[data-chart-range]').forEach(x => x.classList.remove('active'));
+        quarter.classList.add('active');
+        state.activeChartRange = 'quarter';
+        renderProgressCharts();
+      });
+      chartTabs.parentElement.insertBefore(quarter, chartTabs);
+      chartTabs.textContent = 'All';
+      const week = document.querySelector('[data-chart-range="week"]');
+      const month = document.querySelector('[data-chart-range="month"]');
+      if (week) week.textContent = '7D';
+      if (month) month.textContent = '30D';
+    }
+    document.querySelectorAll('[data-upgrade-trigger], #upgradeBtn').forEach(btn => btn && btn.addEventListener('click', startSubscriptionCheckout));
+    const cancelBtn = document.getElementById('cancelSubscriptionBtn');
+    if (cancelBtn) cancelBtn.addEventListener('click', cancelSubscription);
+    const refresh = document.getElementById('refreshLeaderboardBtn');
+    if (refresh) refresh.addEventListener('click', renderLeaderboard);
+    const search = document.getElementById('playerSearchBtn');
+    if (search) search.addEventListener('click', searchPlayer);
+    const input = document.getElementById('playerSearchInput');
+    if (input) input.addEventListener('keydown', e => { if (e.key === 'Enter') searchPlayer(); });
+    const closePublic = document.getElementById('closePublicProfileBtn');
+    if (closePublic) closePublic.addEventListener('click', () => document.getElementById('publicProfileModal').classList.remove('open'));
+    const copy = document.getElementById('copyPlayerIdBtn');
+    if (copy) copy.addEventListener('click', copyPlayerId);
+    document.querySelectorAll('[data-metric]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const metric = btn.dataset.metric;
+        activeMetrics[metric] = !activeMetrics[metric];
+        btn.classList.toggle('active', activeMetrics[metric]);
+        renderProgressCharts();
+      });
+    });
+  };
+
+  function playerIdFor(uid) {
+    return uid ? `TU-${uid.slice(0, 4).toUpperCase()}-${uid.slice(-4).toUpperCase()}` : 'Sign in';
+  }
+  function updatePlayerIds() {
+    const user = window.trackUContext.currentUser;
+    const playerId = user ? playerIdFor(user.uid) : 'Sign in';
+    ['ownPlayerId','profilePlayerId'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = playerId;
+    });
+  }
+  function copyPlayerId() {
+    const user = window.trackUContext.currentUser;
+    if (!user) { toast('Sign in to copy your Player ID.', 'error'); return; }
+    navigator.clipboard.writeText(playerIdFor(user.uid)).then(() => toast('Player ID copied.', 'success'));
+  }
+
+  async function authHeaders() {
+    const user = window.trackUContext.currentUser;
+    if (!user) throw new Error('Please sign in first.');
+    const token = await user.getIdToken();
+    return { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
+  }
+  async function startSubscriptionCheckout() {
+    const user = window.trackUContext.currentUser;
+    if (!user) { document.getElementById('authGateOverlay').classList.add('open'); return; }
+    try {
+      const res = await fetch((cfg.endpoints || {}).createSubscription || '/api/createSubscription', {
+        method: 'POST',
+        headers: await authHeaders(),
+        body: JSON.stringify({ planId: cfg.razorpay && cfg.razorpay.planId })
+      });
+      if (!res.ok) throw new Error('Subscription API is not available yet.');
+      const payload = await res.json();
+      const options = {
+        key: cfg.razorpay && cfg.razorpay.keyId,
+        subscription_id: payload.subscriptionId,
+        name: 'Track U Premium',
+        description: 'INR 99/month subscription',
+        prefill: { name: user.displayName || '', email: user.email || '' },
+        handler: () => {
+          toast('Payment received. Waiting for secure webhook verification.', 'info');
+          const msg = document.getElementById('billingMessage');
+          if (msg) msg.textContent = 'Checkout completed. Premium unlocks after the Razorpay webhook verifies the subscription server-side.';
+        },
+        modal: { ondismiss: () => toast('Checkout closed.', 'info') }
+      };
+      new Razorpay(options).open();
+    } catch (err) {
+      const msg = document.getElementById('billingMessage');
+      if (msg) msg.textContent = err.message;
+      toast(err.message, 'error');
+    }
+  }
+  async function cancelSubscription() {
+    try {
+      const sub = currentSubscription();
+      if (!sub.id && !sub.subscriptionId) { toast('No active subscription found.', 'info'); return; }
+      const res = await fetch((cfg.endpoints || {}).cancelSubscription || '/api/cancelSubscription', {
+        method: 'POST',
+        headers: await authHeaders(),
+        body: JSON.stringify({ subscriptionId: sub.id || sub.subscriptionId })
+      });
+      if (!res.ok) throw new Error('Cancel API is not available yet.');
+      toast('Cancellation requested. Status updates after webhook confirmation.', 'info');
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  }
+  function renderBilling() {
+    const el = document.getElementById('billingStatus');
+    if (!el) return;
+    const sub = currentSubscription();
+    const active = isPremiumActive();
+    el.innerHTML = [
+      ['Plan', active ? 'Premium' : 'Free', active ? 'Advanced analytics unlocked' : 'Upgrade to unlock premium insights'],
+      ['Status', sub.status || 'free', 'Server verified subscription state'],
+      ['Next Renewal', sub.currentEnd || sub.renewsAt || 'Not scheduled', 'Managed by Razorpay Subscriptions']
+    ].map(([label,value,subtext]) => `<div class="insight-card"><div class="insight-label">${label}</div><div class="insight-value">${escHtml(String(value))}</div><div class="insight-sub">${subtext}</div></div>`).join('');
+  }
+
+  async function renderLeaderboard() {
+    const list = document.getElementById('leaderboardList');
+    if (!list) return;
+    const db = window.trackUContext.db;
+    const user = window.trackUContext.currentUser;
+    if (!db || !user) {
+      list.innerHTML = '<div class="heatmap-detail">Sign in to load the leaderboard.</div>';
+      return;
+    }
+    try {
+      const snap = await db.collection('leaderboard').orderBy('xp', 'desc').limit(30).get();
+      if (snap.empty) {
+        list.innerHTML = '<div class="heatmap-detail">Leaderboard will populate after backend public profile sync runs.</div>';
+        return;
+      }
+      let rank = 0, ownRank = null;
+      list.innerHTML = '';
+      snap.forEach(doc => {
+        rank++;
+        const p = doc.data();
+        if (p.uid === user.uid) ownRank = rank;
+        const row = document.createElement('div');
+        row.className = 'leaderboard-row' + (p.uid === user.uid ? ' current-user' : '');
+        row.innerHTML = `<div class="leaderboard-rank">#${rank}</div><div><div class="player-name">${escHtml(p.name || 'Track U Player')}</div><div class="player-sub">${escHtml(p.playerId || doc.id)}</div></div><div class="level-icon">${getLevelIcon(p.level || 1)}</div><div><strong>${p.xp || 0}</strong> XP</div>`;
+        row.addEventListener('click', () => openPublicProfile(p.playerId || doc.id));
+        list.appendChild(row);
+      });
+      const own = document.getElementById('ownRankPanel');
+      if (own) {
+        own.style.display = ownRank ? 'none' : 'block';
+        own.textContent = ownRank ? '' : 'Your rank is outside the top 30 or not synced yet.';
+      }
+      state.stats.leaderboardRank = ownRank;
+    } catch (err) {
+      list.innerHTML = `<div class="heatmap-detail">${escHtml(err.message)}</div>`;
+    }
+  }
+  async function searchPlayer() {
+    const input = document.getElementById('playerSearchInput');
+    const id = (input && input.value || '').trim().toUpperCase();
+    if (!id) return;
+    openPublicProfile(id);
+  }
+  async function openPublicProfile(playerId) {
+    const db = window.trackUContext.db;
+    if (!db) return;
+    const modal = document.getElementById('publicProfileModal');
+    const status = document.getElementById('playerSearchStatus');
+    try {
+      const snap = await db.collection('publicProfiles').where('playerId', '==', playerId).limit(1).get();
+      if (snap.empty) throw new Error('No public player found for that Player ID.');
+      const p = snap.docs[0].data();
+      document.getElementById('publicProfileTitle').textContent = `${p.name || 'Track U Player'} - ${p.playerId}`;
+      document.getElementById('publicProfileStats').innerHTML = [
+        ['Consistency', `${p.consistencyScore || 0}%`, 'Public score'],
+        ['Level', p.level || 1, `${p.xp || 0} XP`],
+        ['Achievements', (p.achievements || []).length, 'Unlocked public badges']
+      ].map(([label,value,sub]) => `<div class="insight-card"><div class="insight-label">${label}</div><div class="insight-value">${value}</div><div class="insight-sub">${sub}</div></div>`).join('');
+      renderMiniHeatmap(document.getElementById('publicProfileHeatmap'), p.heatmap || {});
+      const badgeGrid = document.getElementById('publicProfileBadges');
+      const ids = new Set(p.achievements || []);
+      badgeGrid.innerHTML = BADGES.filter(b => ids.has(b.id)).map(b => `<div class="badge-card unlocked"><div class="badge-icon">${b.icon}</div><div class="badge-name">${b.name}</div><div class="badge-desc">${b.desc}</div></div>`).join('') || '<div class="heatmap-detail">No public achievements yet.</div>';
+      modal.classList.add('open');
+      if (status) status.textContent = 'Public profile loaded.';
+    } catch (err) {
+      if (status) status.textContent = err.message;
+      toast(err.message, 'error');
+    }
+  }
+  function renderMiniHeatmap(target, heatmap) {
+    if (!target) return;
+    target.innerHTML = '';
+    Object.keys(heatmap).sort().slice(-84).forEach(key => {
+      const cell = document.createElement('div');
+      cell.className = 'heatmap-cell';
+      const level = Math.min(5, Math.max(0, heatmap[key] || 0));
+      if (level) cell.dataset.level = level;
+      cell.title = `${key}: level ${level}`;
+      target.appendChild(cell);
+    });
+  }
+})();
+</script>
+
 <!-- ============================================================
      FIREBASE AUTH + FIRESTORE INTEGRATION
      ============================================================ -->
@@ -3094,25 +3929,22 @@ document.addEventListener('DOMContentLoaded', init);
   /* ----------------------------------------------------------
      FIREBASE CONFIG & INIT
   ---------------------------------------------------------- */
-  const firebaseConfig = {
-    apiKey: "AIzaSyBCb9gjYCVpkxbZFFrKssneYrhKyC9Ek9k",
-    authDomain: "track-u-fb116.firebaseapp.com",
-    projectId: "track-u-fb116",
-    storageBucket: "track-u-fb116.firebasestorage.app",
-    messagingSenderId: "780812482768",
-    appId: "1:780812482768:web:626ebf0789d1730b1146d5",
-    measurementId: "G-PL2DEWLQET"
-  };
+  const firebaseConfig = window.TRACK_U_CONFIG.firebase;
 
   // Avoid re-initialising if already done (e.g. hot-reload scenarios)
   if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db   = firebase.firestore();
+  window.trackUContext = window.trackUContext || {};
+  window.trackUContext.db = db;
 
   /* ----------------------------------------------------------
      AUTH STATE
   ---------------------------------------------------------- */
   let currentUser = null;
+  function playerIdFor(uid) {
+    return uid ? `TU-${uid.slice(0, 4).toUpperCase()}-${uid.slice(-4).toUpperCase()}` : '';
+  }
 
   /* ----------------------------------------------------------
      GUEST-RESTRICTED ACTIONS
@@ -3159,10 +3991,12 @@ document.addEventListener('DOMContentLoaded', init);
         profile: {
           name: currentUser.displayName || '',
           email: currentUser.email || '',
+          playerId: playerIdFor(currentUser.uid),
           xp: state.stats.totalXP,
           level: state.stats.level,
           streak: state.stats.currentStreak,
-          longestStreak: state.stats.longestStreak
+          longestStreak: state.stats.longestStreak,
+          consistencyScore: calcConsistencyScore()
         },
         tasks: state.tasks,
         history: state.history,
@@ -3186,6 +4020,7 @@ document.addEventListener('DOMContentLoaded', init);
         if (data.history)  state.history  = data.history;
         if (data.stats)    state.stats    = { ...state.stats, ...data.stats };
         if (data.settings) state.settings = { ...state.settings, ...data.settings };
+        if (data.subscription) state.subscription = data.subscription;
         if (data.lastReset) state.lastReset = data.lastReset;
       }
     } catch(e) {
@@ -3234,6 +4069,11 @@ document.addEventListener('DOMContentLoaded', init);
       if (modalAvatar) modalAvatar.innerHTML = photoURL ? `<img src="${photoURL}" alt="avatar">` : initial;
       if (modalName)   modalName.textContent  = displayName;
       if (modalEmail)  modalEmail.textContent = currentUser.email || '';
+      const playerId = playerIdFor(currentUser.uid);
+      const profilePlayerId = document.getElementById('profilePlayerId');
+      const ownPlayerId = document.getElementById('ownPlayerId');
+      if (profilePlayerId) profilePlayerId.textContent = playerId;
+      if (ownPlayerId) ownPlayerId.textContent = playerId;
 
       container.querySelector('#profileCardBtn').addEventListener('click', openProfileModal);
     } else {
@@ -3341,6 +4181,7 @@ document.addEventListener('DOMContentLoaded', init);
   ---------------------------------------------------------- */
   auth.onAuthStateChanged(async (user) => {
     currentUser = user;
+    window.trackUContext.currentUser = user;
     if (user) {
       // Logged in: load Firestore data, override guards
       await loadUserData();
@@ -3348,6 +4189,7 @@ document.addEventListener('DOMContentLoaded', init);
       applyTheme();
       checkAchievements();
       render();
+      if (typeof window.updatePremiumLocks === 'function') window.updatePremiumLocks();
       // Remove guards (restore full access)
       // Guards are re-applied only by applyGuards(); if user is null
       toast(`Welcome back, ${user.displayName || user.email}! 👋`, 'success');
@@ -3357,6 +4199,7 @@ document.addEventListener('DOMContentLoaded', init);
     }
     // Always update sidebar profile area
     renderSidebarProfile();
+    if (typeof window.updatePremiumLocks === 'function') window.updatePremiumLocks();
   });
 
 })();

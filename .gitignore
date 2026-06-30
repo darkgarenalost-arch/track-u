@@ -1,0 +1,10 @@
+.env
+.env.*
+!.env.example
+node_modules/
+functions/node_modules/
+functions/.runtimeconfig.json
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+*.local

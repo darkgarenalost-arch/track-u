@@ -485,18 +485,11 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
+<script src="firebase-config.js"></script>
 
 <script>
 (function() {
-    const firebaseConfig = {
-        apiKey: "AIzaSyBCb9gjYCVpkxbZFFrKssneYrhKyC9Ek9k",
-        authDomain: "track-u-fb116.firebaseapp.com",
-        projectId: "track-u-fb116",
-        storageBucket: "track-u-fb116.firebasestorage.app",
-        messagingSenderId: "780812482768",
-        appId: "1:780812482768:web:626ebf0789d1730b1146d5",
-        measurementId: "G-PL2DEWLQET"
-    };
+    const firebaseConfig = window.TRACK_U_CONFIG.firebase;
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();

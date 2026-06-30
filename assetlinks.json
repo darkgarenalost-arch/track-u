@@ -1,8 +1,0 @@
-[{
-      "relation": ["delegate_permission/common.handle_all_urls"],
-      "target": {
-        "namespace": "android_app",
-        "package_name": "dev.pages.track_u.twa",
-        "sha256_cert_fingerprints": ["47:0E:4E:98:87:37:0C:C9:3C:91:23:81:A1:74:88:99:AC:96:28:83:F2:2D:82:F0:A5:FE:B4:8B:16:21:B9:62"]
-      }
-    }]
