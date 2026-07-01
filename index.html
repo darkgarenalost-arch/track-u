@@ -3699,16 +3699,69 @@ document.addEventListener('DOMContentLoaded', init);
     navigator.clipboard.writeText(playerIdFor(user.uid)).then(() => toast('Player ID copied.', 'success'));
   }
 
-  // Razorpay Payment Link — no backend / Cloud Functions required (Firebase Spark friendly).
-  const RAZORPAY_PAYMENT_LINK = (cfg.razorpay && cfg.razorpay.paymentLink) || 'https://rzp.io/l/track-u-premium';
-
-  function startSubscriptionCheckout() {
+  // Automatic Cloudflare subscription flow — Razorpay Subscriptions via /api/createSubscription.
+  async function startSubscriptionCheckout() {
     const user = window.trackUContext.currentUser;
     if (!user) { document.getElementById('authGateOverlay').classList.add('open'); return; }
-    window.open(RAZORPAY_PAYMENT_LINK, '_blank');
-    toast('Complete payment and send your Player ID to activate Premium.', 'info');
+
     const msg = document.getElementById('billingMessage');
-    if (msg) msg.textContent = 'Complete payment and send your Player ID to activate Premium. Your account is upgraded manually after payment is confirmed.';
+    try {
+      toast('Setting up your subscription...', 'info');
+      if (msg) msg.textContent = 'Setting up your subscription...';
+
+      const idToken = await user.getIdToken();
+      const playerId = playerIdFor(user.uid);
+
+      const res = await fetch('/api/createSubscription', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        },
+        body: JSON.stringify({
+          email: user.email,
+          playerId
+        })
+      });
+
+      if (!res.ok) {
+        const errText = await res.text().catch(() => '');
+        throw new Error(errText || 'Unable to create subscription. Please try again.');
+      }
+
+      const { subscriptionId, razorpayKey } = await res.json();
+      if (!subscriptionId || !razorpayKey) {
+        throw new Error('Subscription setup failed. Please try again.');
+      }
+
+      const rzp = new Razorpay({
+        key: razorpayKey,
+        subscription_id: subscriptionId,
+        name: 'Track U Premium',
+        description: 'Track U Premium Subscription',
+        theme: { color: '#6c63ff' },
+        prefill: { email: user.email },
+        handler: function () {
+          toast('Payment successful! Premium will unlock shortly.', 'success');
+          if (msg) msg.textContent = 'Payment successful. Your account will be upgraded automatically once the webhook confirms payment.';
+        },
+        modal: {
+          ondismiss: function () {
+            if (msg) msg.textContent = 'Checkout closed. You can retry the upgrade anytime.';
+          }
+        }
+      });
+
+      rzp.on('payment.failed', function (response) {
+        toast('Payment failed. Please try again.', 'error');
+        if (msg) msg.textContent = `Payment failed: ${response?.error?.description || 'Please try again.'}`;
+      });
+
+      rzp.open();
+    } catch (err) {
+      toast(err.message || 'Unable to start checkout.', 'error');
+      if (msg) msg.textContent = err.message || 'Unable to start checkout. Please try again.';
+    }
   }
   function cancelSubscription() {
     toast('Contact support to cancel your subscription.', 'info');
@@ -3820,7 +3873,15 @@ document.addEventListener('DOMContentLoaded', init);
   /* ----------------------------------------------------------
      FIREBASE CONFIG & INIT
   ---------------------------------------------------------- */
-  const firebaseConfig = window.TRACK_U_CONFIG.firebase;
+  const firebaseConfig = {
+    apiKey: "AIzaSyBCb9gjYCVpkxbZFFrKssneYrhKyC9Ek9k",
+    authDomain: "track-u-fb116.firebaseapp.com",
+    projectId: "track-u-fb116",
+    storageBucket: "track-u-fb116.firebasestorage.app",
+    messagingSenderId: "780812482768",
+    appId: "1:780812482768:web:626ebf0789d1730b1146d5",
+    measurementId: "G-PL2DEWLQET"
+  };
 
   // Avoid re-initialising if already done (e.g. hot-reload scenarios)
   if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
