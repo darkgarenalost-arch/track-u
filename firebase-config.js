@@ -13,8 +13,5 @@ window.TRACK_U_CONFIG = {
     planId: "plan_T7sRJklxRHEWUF",
     priceLabel: "INR 99/month"
   },
-  endpoints: {
-    createSubscription: "/api/createSubscription",
-    cancelSubscription: "/api/cancelSubscription"
-  }
+  endpoints: {}
 };
