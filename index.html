@@ -1612,7 +1612,7 @@ canvas { max-width: 100%; }
         <button class="btn btn-primary" id="upgradeBtn">Upgrade with Razorpay</button>
         <button class="btn btn-secondary" id="cancelSubscriptionBtn">Cancel Subscription</button>
       </div>
-      <div class="heatmap-detail" id="billingMessage">Subscription status is verified from Firestore data written by backend webhooks.</div>
+      <div class="heatmap-detail" id="billingMessage">Complete payment and send your Player ID to activate Premium. Your account is upgraded manually after payment is confirmed.</div>
     </div>
   </section>
 
@@ -1639,14 +1639,6 @@ canvas { max-width: 100%; }
         <div class="toggle-switch on" id="confettiToggle"></div>
       </div>
     </div>
-    <div class="divider"></div>
-    <div class="card-title" style="margin-bottom:12px;"><span class="title-icon">💾</span> Data Management</div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;">
-      <button class="btn btn-secondary" id="exportBtn">📤 Export JSON</button>
-      <button class="btn btn-secondary" id="importBtn">📥 Import JSON</button>
-      <button class="btn btn-danger" id="resetBtn">🗑️ Reset All Data</button>
-    </div>
-    <input type="file" id="importFile" accept=".json" style="display:none">
   </section>
 
 </main>
@@ -1731,20 +1723,6 @@ canvas { max-width: 100%; }
     <div class="modal-actions">
       <button class="btn btn-secondary" id="cancelTaskBtn">Cancel</button>
       <button class="btn btn-primary" id="saveTaskBtn">Save Task</button>
-    </div>
-  </div>
-</div>
-
-<!-- RESET CONFIRM MODAL -->
-<div class="modal-overlay" id="resetModal">
-  <div class="modal">
-    <div class="modal-title">⚠️ Reset All Data?</div>
-    <div style="font-size:14px;color:var(--text-secondary);line-height:1.6;">
-      This will permanently delete all your tasks, streaks, XP, and history. This action cannot be undone.
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" id="cancelResetBtn">Cancel</button>
-      <button class="btn btn-danger" id="confirmResetBtn">Yes, Reset Everything</button>
     </div>
   </div>
 </div>
@@ -3119,45 +3097,6 @@ async function requestNotifications() {
 }
 
 /* =========================================================
-   DATA MANAGEMENT
-   ========================================================= */
-function exportData() {
-  const json = JSON.stringify(state, null, 2);
-  const blob = new Blob([json], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `streakos-backup-${today()}.json`;
-  a.click();
-  toast('Data exported!', 'success');
-}
-
-function importData(file) {
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const imported = JSON.parse(e.target.result);
-      state = { ...state, ...imported };
-      saveState();
-      render();
-      toast('Data imported successfully!', 'success');
-    } catch {
-      toast('Invalid backup file!', 'error');
-    }
-  };
-  reader.readAsText(file);
-}
-
-function resetData() {
-  state.tasks = [];
-  state.history = {};
-  state.stats = { totalXP:0, currentStreak:0, longestStreak:0, totalCompletions:0, perfectWeeks:0, highScoreDays:0, earlyBird:false, level:1, newBadges:[], pomSessions:0, pomLog:[] };
-  state.lastReset = today();
-  saveState();
-  render();
-  toast('All data reset!', 'info');
-}
-
-/* =========================================================
    THEME
    ========================================================= */
 function toggleTheme() {
@@ -3255,19 +3194,6 @@ function bindEvents() {
     saveState(); renderSettings();
   });
 
-  // Data management
-  document.getElementById('exportBtn').addEventListener('click', exportData);
-  document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
-  document.getElementById('importFile').addEventListener('change', e => {
-    if (e.target.files[0]) importData(e.target.files[0]);
-    e.target.value = '';
-  });
-  document.getElementById('resetBtn').addEventListener('click', () => document.getElementById('resetModal').classList.add('open'));
-  document.getElementById('cancelResetBtn').addEventListener('click', () => document.getElementById('resetModal').classList.remove('open'));
-  document.getElementById('confirmResetBtn').addEventListener('click', () => {
-    document.getElementById('resetModal').classList.remove('open');
-    resetData();
-  });
 
   // Pomodoro
   document.getElementById('pomStart').addEventListener('click', startPom);
@@ -3773,57 +3699,21 @@ document.addEventListener('DOMContentLoaded', init);
     navigator.clipboard.writeText(playerIdFor(user.uid)).then(() => toast('Player ID copied.', 'success'));
   }
 
-  async function authHeaders() {
-    const user = window.trackUContext.currentUser;
-    if (!user) throw new Error('Please sign in first.');
-    const token = await user.getIdToken();
-    return { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
-  }
-  async function startSubscriptionCheckout() {
+  // Razorpay Payment Link — no backend / Cloud Functions required (Firebase Spark friendly).
+  const RAZORPAY_PAYMENT_LINK = (cfg.razorpay && cfg.razorpay.paymentLink) || 'https://rzp.io/l/track-u-premium';
+
+  function startSubscriptionCheckout() {
     const user = window.trackUContext.currentUser;
     if (!user) { document.getElementById('authGateOverlay').classList.add('open'); return; }
-    try {
-      const res = await fetch((cfg.endpoints || {}).createSubscription || '/api/createSubscription', {
-        method: 'POST',
-        headers: await authHeaders(),
-        body: JSON.stringify({ planId: cfg.razorpay && cfg.razorpay.planId })
-      });
-      if (!res.ok) throw new Error('Subscription API is not available yet.');
-      const payload = await res.json();
-      const options = {
-        key: cfg.razorpay && cfg.razorpay.keyId,
-        subscription_id: payload.subscriptionId,
-        name: 'Track U Premium',
-        description: 'INR 99/month subscription',
-        prefill: { name: user.displayName || '', email: user.email || '' },
-        handler: () => {
-          toast('Payment received. Waiting for secure webhook verification.', 'info');
-          const msg = document.getElementById('billingMessage');
-          if (msg) msg.textContent = 'Checkout completed. Premium unlocks after the Razorpay webhook verifies the subscription server-side.';
-        },
-        modal: { ondismiss: () => toast('Checkout closed.', 'info') }
-      };
-      new Razorpay(options).open();
-    } catch (err) {
-      const msg = document.getElementById('billingMessage');
-      if (msg) msg.textContent = err.message;
-      toast(err.message, 'error');
-    }
+    window.open(RAZORPAY_PAYMENT_LINK, '_blank');
+    toast('Complete payment and send your Player ID to activate Premium.', 'info');
+    const msg = document.getElementById('billingMessage');
+    if (msg) msg.textContent = 'Complete payment and send your Player ID to activate Premium. Your account is upgraded manually after payment is confirmed.';
   }
-  async function cancelSubscription() {
-    try {
-      const sub = currentSubscription();
-      if (!sub.id && !sub.subscriptionId) { toast('No active subscription found.', 'info'); return; }
-      const res = await fetch((cfg.endpoints || {}).cancelSubscription || '/api/cancelSubscription', {
-        method: 'POST',
-        headers: await authHeaders(),
-        body: JSON.stringify({ subscriptionId: sub.id || sub.subscriptionId })
-      });
-      if (!res.ok) throw new Error('Cancel API is not available yet.');
-      toast('Cancellation requested. Status updates after webhook confirmation.', 'info');
-    } catch (err) {
-      toast(err.message, 'error');
-    }
+  function cancelSubscription() {
+    toast('Contact support to cancel your subscription.', 'info');
+    const msg = document.getElementById('billingMessage');
+    if (msg) msg.textContent = 'Contact support to cancel your subscription.';
   }
   function renderBilling() {
     const el = document.getElementById('billingStatus');
@@ -3832,10 +3722,11 @@ document.addEventListener('DOMContentLoaded', init);
     const active = isPremiumActive();
     el.innerHTML = [
       ['Plan', active ? 'Premium' : 'Free', active ? 'Advanced analytics unlocked' : 'Upgrade to unlock premium insights'],
-      ['Status', sub.status || 'free', 'Server verified subscription state'],
-      ['Next Renewal', sub.currentEnd || sub.renewsAt || 'Not scheduled', 'Managed by Razorpay Subscriptions']
+      ['Status', sub.status || 'free', 'Verified from your Firestore user document'],
+      ['Next Renewal', sub.currentEnd || sub.renewsAt || 'Not scheduled', 'Activated manually after payment confirmation']
     ].map(([label,value,subtext]) => `<div class="insight-card"><div class="insight-label">${label}</div><div class="insight-value">${escHtml(String(value))}</div><div class="insight-sub">${subtext}</div></div>`).join('');
   }
+  window.renderBilling = renderBilling;
 
   async function renderLeaderboard() {
     const list = document.getElementById('leaderboardList');
@@ -3950,7 +3841,7 @@ document.addEventListener('DOMContentLoaded', init);
      GUEST-RESTRICTED ACTIONS
      Wrap the actions that guests cannot perform.
   ---------------------------------------------------------- */
-  const RESTRICTED_ACTIONS = ['openAddModal', 'openEditModal', 'deleteTask', 'completeTask', 'exportData', 'importData', 'saveSettings'];
+  const RESTRICTED_ACTIONS = ['openAddModal', 'openEditModal', 'deleteTask', 'completeTask', 'saveSettings'];
 
   function showAuthGate() {
     document.getElementById('authGateOverlay').classList.add('open');
@@ -4020,8 +3911,17 @@ document.addEventListener('DOMContentLoaded', init);
         if (data.history)  state.history  = data.history;
         if (data.stats)    state.stats    = { ...state.stats, ...data.stats };
         if (data.settings) state.settings = { ...state.settings, ...data.settings };
-        if (data.subscription) state.subscription = data.subscription;
         if (data.lastReset) state.lastReset = data.lastReset;
+        // Premium subscription sync — manually activated by admin in Firestore
+        // (users/{uid}.subscription: { status: "active", currentEnd: "..." }).
+        // No Cloud Functions / backend involved; this survives page refreshes
+        // because it re-reads on every auth state change / login.
+        if (data.subscription) {
+          state.subscription = data.subscription;
+          if (typeof window.renderBilling === 'function') window.renderBilling();
+          if (typeof window.updatePremiumLocks === 'function') window.updatePremiumLocks();
+          if (typeof render === 'function') render();
+        }
       }
     } catch(e) {
       console.warn('Firestore load error:', e);
@@ -4169,8 +4069,6 @@ document.addEventListener('DOMContentLoaded', init);
     if (typeof window.openEditModal  === 'function') window.openEditModal  = guardedAction(window.openEditModal);
     if (typeof window.deleteTask     === 'function') window.deleteTask     = guardedAction(window.deleteTask);
     if (typeof window.completeTask   === 'function') window.completeTask   = guardedAction(window.completeTask);
-    if (typeof window.exportData     === 'function') window.exportData     = guardedAction(window.exportData);
-    if (typeof window.importData     === 'function') window.importData     = guardedAction(window.importData);
     // Guard saveState for settings (already overridden above, wrap further for guests)
     const _guardedSave = window.saveState;
     window.saveSettings = guardedAction(_guardedSave);
