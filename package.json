@@ -1,0 +1,9 @@
+{
+  "name": "track-u-pages-functions",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Cloudflare Pages Functions backend for Track U subscriptions (replaces Firebase Functions).",
+  "dependencies": {
+    "jose": "^5.9.6"
+  }
+}
