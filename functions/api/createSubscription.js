@@ -1,7 +1,7 @@
-import { verifyFirebaseIdToken } from "../_lib/firebaseAuth.js";
-import { razorpayRequest } from "../_lib/razorpay.js";
-import { patchDocument } from "../_lib/firestore.js";
-import { json, handleOptions } from "../_lib/cors.js";
+import { verifyFirebaseIdToken } from "./_lib/firebaseAuth.js";
+import { razorpayRequest } from "./_lib/razorpay.js";
+import { patchDocument } from "./_lib/firestore.js";
+import { json, handleOptions } from "./_lib/cors.js";
 
 function playerIdFor(uid) {
   return `TU-${uid.slice(0, 4).toUpperCase()}-${uid.slice(-4).toUpperCase()}`;

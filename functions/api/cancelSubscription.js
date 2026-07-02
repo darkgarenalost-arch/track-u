@@ -1,7 +1,7 @@
-import { verifyFirebaseIdToken } from "../_lib/firebaseAuth.js";
-import { razorpayRequest } from "../_lib/razorpay.js";
-import { getDocument } from "../_lib/firestore.js";
-import { json, handleOptions } from "../_lib/cors.js";
+import { verifyFirebaseIdToken } from "./_lib/firebaseAuth.js";
+import { razorpayRequest } from "./_lib/razorpay.js";
+import { getDocument } from "./_lib/firestore.js";
+import { json, handleOptions } from "./_lib/cors.js";
 
 export async function onRequestOptions(context) {
   return handleOptions(context.request);

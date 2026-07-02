@@ -1,6 +1,6 @@
-import { verifyRazorpaySignature } from "../_lib/webhookVerify.js";
-import { patchDocument } from "../_lib/firestore.js";
-import { json, handleOptions } from "../_lib/cors.js";
+import { verifyRazorpaySignature } from "./_lib/webhookVerify.js";
+import { patchDocument } from "./_lib/firestore.js";
+import { json, handleOptions } from "./_lib/cors.js";
 
 const STATUS_BY_EVENT = {
   "subscription.activated": "active",
