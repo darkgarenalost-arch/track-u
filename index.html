@@ -8,7 +8,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Daily Progress Tracker</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 /* =========================================================
@@ -1036,41 +1035,6 @@ canvas { max-width: 100%; }
 /* =========================================================
    PREMIUM, ANALYTICS & LEADERBOARD ENHANCEMENTS
    ========================================================= */
-.premium-pill {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 5px 10px; border-radius: 999px;
-  border: 1px solid rgba(245,158,11,0.35);
-  background: rgba(245,158,11,0.12);
-  color: var(--accent-4); font-size: 11px; font-weight: 800;
-  text-transform: uppercase; letter-spacing: 0.5px;
-}
-.premium-gate {
-  display: none; margin-bottom: 20px;
-  background: linear-gradient(135deg, rgba(108,99,255,0.18), rgba(245,158,11,0.14)), var(--bg-card);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius);
-  box-shadow: var(--neu-raised-hover);
-  padding: 26px;
-  overflow: hidden;
-  position: relative;
-}
-.premium-gate::after {
-  content: ''; position: absolute; width: 240px; height: 240px; right: -90px; top: -90px;
-  background: radial-gradient(circle, rgba(245,158,11,0.28), transparent 65%);
-  pointer-events: none;
-}
-.premium-gate.open { display: block; }
-.premium-gate h2 { font-size: 26px; margin: 10px 0 8px; letter-spacing: 0; }
-.premium-gate p { color: var(--text-secondary); line-height: 1.6; max-width: 680px; font-size: 14px; }
-.premium-features { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 18px 0; }
-.premium-feature {
-  padding: 12px; border-radius: var(--radius-xs);
-  background: rgba(255,255,255,0.07); border: 1px solid var(--border);
-  color: var(--text-secondary); font-size: 12px;
-}
-.premium-content.locked { display: none; }
 .analytics-toolbar, .mini-toolbar {
   display: flex; align-items: center; justify-content: space-between;
   gap: 12px; flex-wrap: wrap; margin-bottom: 14px;
@@ -1201,7 +1165,6 @@ canvas { max-width: 100%; }
     <div class="nav-item" data-section="settings"><span class="nav-icon">⚙️</span> Settings</div>
   </div>
     <div class="nav-item" data-section="leaderboard"><span class="nav-icon">#</span> Leaderboard</div>
-    <div class="nav-item" data-section="billing"><span class="nav-icon">Rs</span> Billing</div>
   <div class="sidebar-bottom">
     <div class="nav-item" id="themeToggleNav"><span class="nav-icon" id="themeIcon">☀️</span> <span id="themeLabel">Dark Mode</span></div>
   </div>
@@ -1371,18 +1334,7 @@ canvas { max-width: 100%; }
     <div class="page-header">
       <div class="header-left"><h1>Progress Graph</h1><p>Your consistency over time</p></div>
     </div>
-    <div class="premium-gate" data-premium-gate="progress">
-      <span class="premium-pill">Premium</span>
-      <h2>Unlock Progress Analytics</h2>
-      <p>Track completion, focus minutes, XP velocity, category mix, and trend changes across 7-day, 30-day, 90-day, and all-time views.</p>
-      <div class="premium-features">
-        <div class="premium-feature">Multi-metric timeline with tooltips</div>
-        <div class="premium-feature">Trend comparison vs previous period</div>
-        <div class="premium-feature">Deep statistics dashboard included</div>
-      </div>
-      <button class="btn btn-primary" data-upgrade-trigger>Upgrade - INR 99/month</button>
-    </div>
-    <div class="insight-grid premium-content" data-premium-content="progress" id="progressInsights"></div>
+    <div class="insight-grid" id="progressInsights"></div>
     <div class="card" style="margin-bottom:20px;">
       <div class="card-header">
         <div class="card-title"><span class="title-icon">📈</span> Consistency Score</div>
@@ -1411,18 +1363,7 @@ canvas { max-width: 100%; }
     <div class="page-header">
       <div class="header-left"><h1>Habit Heatmap</h1><p>365 days of activity</p></div>
     </div>
-    <div class="premium-gate" data-premium-gate="heatmap">
-      <span class="premium-pill">Premium</span>
-      <h2>Unlock Productivity Heatmap</h2>
-      <p>Explore a full contribution-style calendar with activity intensity, streak summaries, filters, and tap details.</p>
-      <div class="premium-features">
-        <div class="premium-feature">Intensity based on productivity volume</div>
-        <div class="premium-feature">Current and best streak summaries</div>
-        <div class="premium-feature">Category/date detail panel</div>
-      </div>
-      <button class="btn btn-primary" data-upgrade-trigger>Upgrade - INR 99/month</button>
-    </div>
-    <div class="heatmap-summary premium-content" data-premium-content="heatmap" id="heatmapSummary"></div>
+    <div class="heatmap-summary" id="heatmapSummary"></div>
     <div class="card">
       <div class="card-header">
         <div class="card-title"><span class="title-icon">🗓️</span> Activity</div>
@@ -1446,7 +1387,7 @@ canvas { max-width: 100%; }
           </div>
         </div>
       </div>
-      <div class="heatmap-detail premium-content" data-premium-content="heatmap" id="heatmapDetail">Select a day to inspect activity details.</div>
+      <div class="heatmap-detail" id="heatmapDetail">Select a day to inspect activity details.</div>
     </div>
   </section>
 
@@ -1465,17 +1406,6 @@ canvas { max-width: 100%; }
   <section id="section-stats" class="section-hidden">
     <div class="page-header">
       <div class="header-left"><h1>Statistics</h1><p>Deep dive into your data</p></div>
-    </div>
-    <div class="premium-gate" data-premium-gate="stats">
-      <span class="premium-pill">Premium</span>
-      <h2>Unlock Advanced Statistics</h2>
-      <p>See completion velocity, strongest time windows, category breakdowns, and previous-period comparisons.</p>
-      <div class="premium-features">
-        <div class="premium-feature">Average completion and focus consistency</div>
-        <div class="premium-feature">Best day and category performance</div>
-        <div class="premium-feature">Period-over-period comparisons</div>
-      </div>
-      <button class="btn btn-primary" data-upgrade-trigger>Upgrade - INR 99/month</button>
     </div>
     <div class="grid-3" id="statsGrid"></div>
   </section>
@@ -1537,17 +1467,6 @@ canvas { max-width: 100%; }
     <div class="page-header">
       <div class="header-left"><h1>Weekly Review</h1><p>This week at a glance</p></div>
     </div>
-    <div class="premium-gate" data-premium-gate="weekly">
-      <span class="premium-pill">Premium</span>
-      <h2>Unlock Weekly Review</h2>
-      <p>Get a narrative review of your wins, dips, best day, XP growth, and personalized next-week recommendations.</p>
-      <div class="premium-features">
-        <div class="premium-feature">Narrative performance summary</div>
-        <div class="premium-feature">Behavior-based recommendations</div>
-        <div class="premium-feature">Shareable text export</div>
-      </div>
-      <button class="btn btn-primary" data-upgrade-trigger>Upgrade - INR 99/month</button>
-    </div>
     <div class="card" style="margin-bottom:20px;">
       <div class="card-title" style="margin-bottom:16px;"><span class="title-icon">📅</span> This Week</div>
       <div class="weekly-days" id="weeklyDays"></div>
@@ -1592,30 +1511,6 @@ canvas { max-width: 100%; }
     </div>
   </section>
 
-  <!-- ========= BILLING ========= -->
-  <section id="section-billing" class="section-hidden">
-    <div class="page-header">
-      <div class="header-left"><h1>Billing</h1><p>Manage Track U Premium</p></div>
-    </div>
-    <div class="billing-status" id="billingStatus"></div>
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title"><span class="title-icon">Rs</span> Premium Plan</div>
-        <span class="premium-pill">INR 99/month</span>
-      </div>
-      <div class="premium-features">
-        <div class="premium-feature">Weekly Review with recommendations</div>
-        <div class="premium-feature">Advanced Heatmap and streak detail</div>
-        <div class="premium-feature">Progress Analytics and statistics dashboard</div>
-      </div>
-      <div class="profile-actions">
-        <button class="btn btn-primary" id="upgradeBtn">Upgrade with Razorpay</button>
-        <button class="btn btn-secondary" id="cancelSubscriptionBtn">Cancel Subscription</button>
-      </div>
-      <div class="heatmap-detail" id="billingMessage">Complete payment and send your Player ID to activate Premium. Your account is upgraded manually after payment is confirmed.</div>
-    </div>
-  </section>
-
   <!-- ========= SETTINGS ========= -->
   <section id="section-settings" class="section-hidden">
     <div class="page-header">
@@ -1639,6 +1534,14 @@ canvas { max-width: 100%; }
         <div class="toggle-switch on" id="confettiToggle"></div>
       </div>
     </div>
+    <div class="divider"></div>
+    <div class="card-title" style="margin-bottom:12px;"><span class="title-icon">💾</span> Data Management</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn btn-secondary" id="exportBtn">📤 Export JSON</button>
+      <button class="btn btn-secondary" id="importBtn">📥 Import JSON</button>
+      <button class="btn btn-danger" id="resetBtn">🗑️ Reset All Data</button>
+    </div>
+    <input type="file" id="importFile" accept=".json" style="display:none">
   </section>
 
 </main>
@@ -1723,6 +1626,20 @@ canvas { max-width: 100%; }
     <div class="modal-actions">
       <button class="btn btn-secondary" id="cancelTaskBtn">Cancel</button>
       <button class="btn btn-primary" id="saveTaskBtn">Save Task</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESET CONFIRM MODAL -->
+<div class="modal-overlay" id="resetModal">
+  <div class="modal">
+    <div class="modal-title">⚠️ Reset All Data?</div>
+    <div style="font-size:14px;color:var(--text-secondary);line-height:1.6;">
+      This will permanently delete all your tasks, streaks, XP, and history. This action cannot be undone.
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="cancelResetBtn">Cancel</button>
+      <button class="btn btn-danger" id="confirmResetBtn">Yes, Reset Everything</button>
     </div>
   </div>
 </div>
@@ -3097,6 +3014,45 @@ async function requestNotifications() {
 }
 
 /* =========================================================
+   DATA MANAGEMENT
+   ========================================================= */
+function exportData() {
+  const json = JSON.stringify(state, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `streakos-backup-${today()}.json`;
+  a.click();
+  toast('Data exported!', 'success');
+}
+
+function importData(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const imported = JSON.parse(e.target.result);
+      state = { ...state, ...imported };
+      saveState();
+      render();
+      toast('Data imported successfully!', 'success');
+    } catch {
+      toast('Invalid backup file!', 'error');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function resetData() {
+  state.tasks = [];
+  state.history = {};
+  state.stats = { totalXP:0, currentStreak:0, longestStreak:0, totalCompletions:0, perfectWeeks:0, highScoreDays:0, earlyBird:false, level:1, newBadges:[], pomSessions:0, pomLog:[] };
+  state.lastReset = today();
+  saveState();
+  render();
+  toast('All data reset!', 'info');
+}
+
+/* =========================================================
    THEME
    ========================================================= */
 function toggleTheme() {
@@ -3194,6 +3150,19 @@ function bindEvents() {
     saveState(); renderSettings();
   });
 
+  // Data management
+  document.getElementById('exportBtn').addEventListener('click', exportData);
+  document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
+  document.getElementById('importFile').addEventListener('change', e => {
+    if (e.target.files[0]) importData(e.target.files[0]);
+    e.target.value = '';
+  });
+  document.getElementById('resetBtn').addEventListener('click', () => document.getElementById('resetModal').classList.add('open'));
+  document.getElementById('cancelResetBtn').addEventListener('click', () => document.getElementById('resetModal').classList.remove('open'));
+  document.getElementById('confirmResetBtn').addEventListener('click', () => {
+    document.getElementById('resetModal').classList.remove('open');
+    resetData();
+  });
 
   // Pomodoro
   document.getElementById('pomStart').addEventListener('click', startPom);
@@ -3262,11 +3231,10 @@ document.addEventListener('DOMContentLoaded', init);
 
 <script>
 /* =========================================================
-   PREMIUM UPGRADE ENHANCEMENTS
+   FEATURE UNLOCK / ANALYTICS ENHANCEMENTS (app is fully free)
    ========================================================= */
 (function() {
   window.trackUContext = window.trackUContext || { currentUser: null, db: null };
-  const cfg = window.TRACK_U_CONFIG || {};
   const activeMetrics = { completion: true, xp: true, focus: true };
 
   LEVELS.length = 0;
@@ -3320,31 +3288,14 @@ document.addEventListener('DOMContentLoaded', init);
     ['leader_top_30','crown','Top 30 Player','Reach the leaderboard top 30',s=>s.leaderboardRank && s.leaderboardRank<=30]
   ].forEach(([id, icon, name, desc, condition]) => BADGES.push({ id, icon: svgBadge(icon), name, desc, condition }));
 
-  function currentSubscription() {
-    return state.subscription || { status: 'free' };
-  }
   function isPremiumActive() {
-    const sub = currentSubscription();
-    const active = ['active', 'authenticated', 'charged'].includes(String(sub.status || '').toLowerCase());
-    if (!active) return false;
-    if (!sub.currentEnd && !sub.expiresAt && !sub.renewsAt) return true;
-    const end = new Date(sub.currentEnd || sub.expiresAt || sub.renewsAt);
-    return Number.isNaN(end.getTime()) || end > new Date();
+    // App is fully free — all features are always unlocked.
+    return true;
   }
   window.isPremiumActive = isPremiumActive;
 
   function setPremiumVisibility() {
-    ['progress','heatmap','stats','weekly'].forEach(id => {
-      const section = document.getElementById('section-' + id);
-      if (!section) return;
-      const locked = !isPremiumActive();
-      const gate = section.querySelector('[data-premium-gate]');
-      if (gate) gate.classList.toggle('open', locked);
-      Array.from(section.children).forEach(child => {
-        if (child.classList.contains('page-header') || child === gate) return;
-        child.style.display = locked ? 'none' : '';
-      });
-    });
+    // No-op: nothing is gated anymore, every section stays visible.
   }
   window.updatePremiumLocks = setPremiumVisibility;
 
@@ -3632,7 +3583,6 @@ document.addEventListener('DOMContentLoaded', init);
   render = function() {
     originalRender();
     setPremiumVisibility();
-    renderBilling();
     renderLeaderboard();
     updatePlayerIds();
   };
@@ -3659,9 +3609,6 @@ document.addEventListener('DOMContentLoaded', init);
       if (week) week.textContent = '7D';
       if (month) month.textContent = '30D';
     }
-    document.querySelectorAll('[data-upgrade-trigger], #upgradeBtn').forEach(btn => btn && btn.addEventListener('click', startSubscriptionCheckout));
-    const cancelBtn = document.getElementById('cancelSubscriptionBtn');
-    if (cancelBtn) cancelBtn.addEventListener('click', cancelSubscription);
     const refresh = document.getElementById('refreshLeaderboardBtn');
     if (refresh) refresh.addEventListener('click', renderLeaderboard);
     const search = document.getElementById('playerSearchBtn');
@@ -3698,88 +3645,6 @@ document.addEventListener('DOMContentLoaded', init);
     if (!user) { toast('Sign in to copy your Player ID.', 'error'); return; }
     navigator.clipboard.writeText(playerIdFor(user.uid)).then(() => toast('Player ID copied.', 'success'));
   }
-
-  // Automatic Cloudflare subscription flow — Razorpay Subscriptions via /api/createSubscription.
-  async function startSubscriptionCheckout() {
-    const user = window.trackUContext.currentUser;
-    if (!user) { document.getElementById('authGateOverlay').classList.add('open'); return; }
-
-    const msg = document.getElementById('billingMessage');
-    try {
-      toast('Setting up your subscription...', 'info');
-      if (msg) msg.textContent = 'Setting up your subscription...';
-
-      const idToken = await user.getIdToken();
-      const playerId = playerIdFor(user.uid);
-
-      const res = await fetch('/api/createSubscription', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${idToken}`
-        },
-        body: JSON.stringify({
-          email: user.email,
-          playerId
-        })
-      });
-
-      if (!res.ok) {
-        const errText = await res.text().catch(() => '');
-        throw new Error(errText || 'Unable to create subscription. Please try again.');
-      }
-
-      const { subscriptionId, razorpayKey } = await res.json();
-      if (!subscriptionId || !razorpayKey) {
-        throw new Error('Subscription setup failed. Please try again.');
-      }
-
-      const rzp = new Razorpay({
-        key: razorpayKey,
-        subscription_id: subscriptionId,
-        name: 'Track U Premium',
-        description: 'Track U Premium Subscription',
-        theme: { color: '#6c63ff' },
-        prefill: { email: user.email },
-        handler: function () {
-          toast('Payment successful! Premium will unlock shortly.', 'success');
-          if (msg) msg.textContent = 'Payment successful. Your account will be upgraded automatically once the webhook confirms payment.';
-        },
-        modal: {
-          ondismiss: function () {
-            if (msg) msg.textContent = 'Checkout closed. You can retry the upgrade anytime.';
-          }
-        }
-      });
-
-      rzp.on('payment.failed', function (response) {
-        toast('Payment failed. Please try again.', 'error');
-        if (msg) msg.textContent = `Payment failed: ${response?.error?.description || 'Please try again.'}`;
-      });
-
-      rzp.open();
-    } catch (err) {
-      toast(err.message || 'Unable to start checkout.', 'error');
-      if (msg) msg.textContent = err.message || 'Unable to start checkout. Please try again.';
-    }
-  }
-  function cancelSubscription() {
-    toast('Contact support to cancel your subscription.', 'info');
-    const msg = document.getElementById('billingMessage');
-    if (msg) msg.textContent = 'Contact support to cancel your subscription.';
-  }
-  function renderBilling() {
-    const el = document.getElementById('billingStatus');
-    if (!el) return;
-    const sub = currentSubscription();
-    const active = isPremiumActive();
-    el.innerHTML = [
-      ['Plan', active ? 'Premium' : 'Free', active ? 'Advanced analytics unlocked' : 'Upgrade to unlock premium insights'],
-      ['Status', sub.status || 'free', 'Verified from your Firestore user document'],
-      ['Next Renewal', sub.currentEnd || sub.renewsAt || 'Not scheduled', 'Activated manually after payment confirmation']
-    ].map(([label,value,subtext]) => `<div class="insight-card"><div class="insight-label">${label}</div><div class="insight-value">${escHtml(String(value))}</div><div class="insight-sub">${subtext}</div></div>`).join('');
-  }
-  window.renderBilling = renderBilling;
 
   async function renderLeaderboard() {
     const list = document.getElementById('leaderboardList');
@@ -3873,15 +3738,7 @@ document.addEventListener('DOMContentLoaded', init);
   /* ----------------------------------------------------------
      FIREBASE CONFIG & INIT
   ---------------------------------------------------------- */
-  const firebaseConfig = {
-    apiKey: "AIzaSyBCb9gjYCVpkxbZFFrKssneYrhKyC9Ek9k",
-    authDomain: "track-u-fb116.firebaseapp.com",
-    projectId: "track-u-fb116",
-    storageBucket: "track-u-fb116.firebasestorage.app",
-    messagingSenderId: "780812482768",
-    appId: "1:780812482768:web:626ebf0789d1730b1146d5",
-    measurementId: "G-PL2DEWLQET"
-  };
+  const firebaseConfig = window.TRACK_U_CONFIG.firebase;
 
   // Avoid re-initialising if already done (e.g. hot-reload scenarios)
   if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
@@ -3902,7 +3759,7 @@ document.addEventListener('DOMContentLoaded', init);
      GUEST-RESTRICTED ACTIONS
      Wrap the actions that guests cannot perform.
   ---------------------------------------------------------- */
-  const RESTRICTED_ACTIONS = ['openAddModal', 'openEditModal', 'deleteTask', 'completeTask', 'saveSettings'];
+  const RESTRICTED_ACTIONS = ['openAddModal', 'openEditModal', 'deleteTask', 'completeTask', 'exportData', 'importData', 'saveSettings'];
 
   function showAuthGate() {
     document.getElementById('authGateOverlay').classList.add('open');
@@ -3972,17 +3829,8 @@ document.addEventListener('DOMContentLoaded', init);
         if (data.history)  state.history  = data.history;
         if (data.stats)    state.stats    = { ...state.stats, ...data.stats };
         if (data.settings) state.settings = { ...state.settings, ...data.settings };
+        if (data.subscription) state.subscription = data.subscription;
         if (data.lastReset) state.lastReset = data.lastReset;
-        // Premium subscription sync — manually activated by admin in Firestore
-        // (users/{uid}.subscription: { status: "active", currentEnd: "..." }).
-        // No Cloud Functions / backend involved; this survives page refreshes
-        // because it re-reads on every auth state change / login.
-        if (data.subscription) {
-          state.subscription = data.subscription;
-          if (typeof window.renderBilling === 'function') window.renderBilling();
-          if (typeof window.updatePremiumLocks === 'function') window.updatePremiumLocks();
-          if (typeof render === 'function') render();
-        }
       }
     } catch(e) {
       console.warn('Firestore load error:', e);
@@ -4130,6 +3978,8 @@ document.addEventListener('DOMContentLoaded', init);
     if (typeof window.openEditModal  === 'function') window.openEditModal  = guardedAction(window.openEditModal);
     if (typeof window.deleteTask     === 'function') window.deleteTask     = guardedAction(window.deleteTask);
     if (typeof window.completeTask   === 'function') window.completeTask   = guardedAction(window.completeTask);
+    if (typeof window.exportData     === 'function') window.exportData     = guardedAction(window.exportData);
+    if (typeof window.importData     === 'function') window.importData     = guardedAction(window.importData);
     // Guard saveState for settings (already overridden above, wrap further for guests)
     const _guardedSave = window.saveState;
     window.saveSettings = guardedAction(_guardedSave);
