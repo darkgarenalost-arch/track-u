@@ -10,6 +10,29 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
+ /* Remove mobile tap highlight */
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
+button,
+a,
+input,
+textarea,
+select,
+[role="button"] {
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+}
+
+button:focus,
+button:active,
+button:focus-visible,
+a:focus,
+a:active {
+    outline: none;
+    box-shadow: none;
+}
 /* =========================================================
    CSS VARIABLES & THEME — PREMIUM GLASSMORPHISM
    ========================================================= */
@@ -1643,7 +1666,7 @@ canvas { max-width: 100%; }
     </div>
   </div>
 </div>
-
+ 
 <style>
 /* =========================================================
    AUTH GATE MODAL
