@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minoxidil Tracker - Daily Application Heat Map</title>
+    <style>
+        :root {
+            --bg: #f1f5f9;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --green-both: #22c55e;
+            --green-bg: #dcfce7;
+            --green-light: #f0fdf4;
+            --orange-one: #f59e0b;
+            --orange-bg: #fff7ed;
+            --orange-light: #fffbeb;
+            --red-missed: #ef4444;
+            --red-bg: #fef2f2;
+            --red-light: #fff5f5;
+            --gray-future: #f8fafc;
+            --gray-no-data: #f1f5f9;
+            --accent: #0ea5e9;
+            --accent-light: #e0f2fe;
+            --today-ring: #0ea5e9;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --radius-xs: 6px;
+            --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 16px;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding-bottom: 32px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 8px 0;
+        }
+        .header .icon-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 4px;
+        }
+        .header .droplet-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #0ea5e9, #3b82f6);
+            border-radius: 50% 50% 50% 50% / 30% 30% 70% 70%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+            animation: pulse-droplet 2.5s ease-in-out infinite;
+        }
+        @keyframes pulse-droplet {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.08);
+            }
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #0f172a;
+        }
+        .header .subtitle {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 18px 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+        .card-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #334155;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-title .dot-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: blink-dot 1.5s ease-in-out infinite;
+        }
+        @keyframes blink-dot {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        /* Today's Tracker */
+        .today-tracker {
+            display: flex;
+            gap: 14px;
+            align-items: stretch;
+        }
+        .checkbox-card {
+            flex: 1;
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: var(--radius-sm);
+            padding: 16px 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            min-height: 110px;
+            justify-content: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .checkbox-card:active {
+            transform: scale(0.96);
+        }
+        .checkbox-card.checked {
+            border-color: var(--green-both);
+            background: var(--green-light);
+            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.08);
+        }
+        .checkbox-card.checked .check-circle {
+            background: var(--green-both);
+            border-color: var(--green-both);
+            box-shadow: 0 0 16px rgba(34, 197, 94, 0.4);
+        }
+        .checkbox-card.checked .check-circle .checkmark {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .checkbox-card .time-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+        }
+        .checkbox-card .time-icon {
+            font-size: 1.6rem;
+        }
+        .check-circle {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 3px solid #cbd5e1;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition);
+            flex-shrink: 0;
+        }
+        .check-circle .checkmark {
+            font-size: 20px;
+            color: #fff;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all var(--transition);
+            font-weight: 700;
+            line-height: 1;
+        }
+        .checkbox-card.checked .time-label {
+            color: #15803d;
+        }
+
+        /* Celebration pulse */
+        .celebrate {
+            animation: celebrate-pop 0.6s ease-out;
+        }
+        @keyframes celebrate-pop {
+            0% {
+                transform: scale(1);
+            }
+            30% {
+                transform: scale(1.06);
+            }
+            60% {
+                transform: scale(0.97);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* Month Navigation */
+        .month-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .month-nav button {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid #e2e8f0;
+            background: #fff;
+            cursor: pointer;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition);
+            color: #475569;
+            flex-shrink: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .month-nav button:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+        .month-nav button:active {
+            background: #e2e8f0;
+            transform: scale(0.93);
+        }
+        .month-nav .month-label {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: #1e293b;
+            letter-spacing: -0.01em;
+            text-align: center;
+            min-width: 140px;
+        }
+        .month-nav .today-btn {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 20px;
+            background: var(--accent-light);
+            color: #0369a1;
+            border: 1px solid #bae6fd;
+            cursor: pointer;
+            transition: all var(--transition);
+            white-space: nowrap;
+            letter-spacing: 0.02em;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .month-nav .today-btn:hover {
+            background: #bae6fd;
+        }
+        .month-nav .today-btn:active {
+            transform: scale(0.94);
+        }
+
+        /* Calendar Grid */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            text-align: center;
+        }
+        .day-header {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding: 6px 0;
+        }
+        .calendar-cell {
+            aspect-ratio: 1 / 1;
+            border-radius: var(--radius-xs);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: default;
+            position: relative;
+            transition: all var(--transition);
+            font-weight: 600;
+            font-size: 0.85rem;
+            min-width: 0;
+            border: 2px solid transparent;
+            background: var(--gray-future);
+            color: #cbd5e1;
+            gap: 2px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .calendar-cell.past {
+            cursor: pointer;
+        }
+        .calendar-cell.past:hover {
+            transform: scale(1.05);
+            z-index: 2;
+            box-shadow: var(--shadow-md);
+        }
+        .calendar-cell.past:active {
+            transform: scale(0.93);
+        }
+        .calendar-cell.today {
+            border: 2.5px solid var(--today-ring) !important;
+            box-shadow: 0 0 0 5px rgba(14, 165, 233, 0.1);
+            z-index: 1;
+            font-weight: 800;
+        }
+        .calendar-cell .day-num {
+            font-size: 0.8rem;
+            line-height: 1;
+            pointer-events: none;
+        }
+        .calendar-cell.today .day-num {
+            font-size: 0.9rem;
+            color: #0369a1;
+        }
+        .calendar-cell .indicators {
+            display: flex;
+            gap: 3px;
+            pointer-events: none;
+        }
+        .calendar-cell .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            transition: all var(--transition);
+            flex-shrink: 0;
+        }
+        .dot.done {
+            background: #22c55e;
+            box-shadow: 0 0 4px rgba(34, 197, 94, 0.5);
+        }
+        .dot.missed {
+            background: #fca5a5;
+            border: 1px solid #f87171;
+        }
+        .dot.no-data {
+            background: #e2e8f0;
+            border: 1px solid #cbd5e1;
+        }
+        .dot.future-dot {
+            background: #e2e8f0;
+            opacity: 0.5;
+        }
+
+        /* Cell backgrounds for heat map */
+        .calendar-cell.cell-both {
+            background: #dcfce7;
+            color: #166534;
+            border-color: #bbf7d0;
+        }
+        .calendar-cell.cell-one {
+            background: #fff7ed;
+            color: #9a3412;
+            border-color: #fed7aa;
+        }
+        .calendar-cell.cell-missed {
+            background: #fef2f2;
+            color: #991b1b;
+            border-color: #fecaca;
+        }
+        .calendar-cell.cell-no-data-past {
+            background: #f8fafc;
+            color: #94a3b8;
+            border-color: #e2e8f0;
+        }
+        .calendar-cell.cell-future {
+            background: #fafafa;
+            color: #d1d5db;
+            border-color: transparent;
+        }
+        .calendar-cell.other-month {
+            opacity: 0.35;
+            pointer-events: none;
+            background: #fafafa;
+            color: #d1d5db;
+            border-color: transparent;
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            padding: 4px 0;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #64748b;
+        }
+        .legend-swatch {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            flex-shrink: 0;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+        .swatch-both {
+            background: #dcfce7;
+            border-color: #bbf7d0;
+        }
+        .swatch-one {
+            background: #fff7ed;
+            border-color: #fed7aa;
+        }
+        .swatch-missed {
+            background: #fef2f2;
+            border-color: #fecaca;
+        }
+        .swatch-future {
+            background: #fafafa;
+            border-color: #e2e8f0;
+        }
+
+        /* Stats */
+        .stats-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .stat-card {
+            background: #f8fafc;
+            border-radius: var(--radius-sm);
+            padding: 14px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+        .stat-value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: #0f172a;
+            line-height: 1;
+        }
+        .stat-value.green {
+            color: #15803d;
+        }
+        .stat-value.orange {
+            color: #c2410c;
+        }
+        .stat-value.blue {
+            color: #0369a1;
+        }
+        .stat-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 4px;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #1e293b;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 24px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            pointer-events: none;
+            opacity: 0;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 100;
+            box-shadow: var(--shadow-lg);
+            white-space: nowrap;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Responsive */
+        @media (max-width: 380px) {
+            .calendar-grid {
+                gap: 2px;
+            }
+            .calendar-cell {
+                font-size: 0.7rem;
+                border-radius: 4px;
+            }
+            .calendar-cell .day-num {
+                font-size: 0.7rem;
+            }
+            .calendar-cell .dot {
+                width: 5px;
+                height: 5px;
+            }
+            .calendar-cell .indicators {
+                gap: 2px;
+            }
+            .checkbox-card {
+                padding: 12px 8px;
+                min-height: 95px;
+                gap: 6px;
+            }
+            .check-circle {
+                width: 36px;
+                height: 36px;
+            }
+            .card {
+                padding: 14px 10px;
+            }
+            .stats-row {
+                gap: 6px;
+            }
+            .stat-card {
+                padding: 10px 8px;
+            }
+            .stat-value {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="icon-row">
+                <div class="droplet-icon">💧</div>
+            </div>
+            <h1>Minoxidil Tracker</h1>
+            <p class="subtitle">Track daily applications · Build your streak</p>
+        </div>
+
+        <!-- Today's Tracker Card -->
+        <div class="card" id="todayCard">
+            <div class="card-header">
+                <span class="card-title">
+                    <span class="dot-indicator"></span> Today's Application
+                </span>
+                <span style="font-size:0.8rem;color:#64748b;font-weight:600;" id="todayDateLabel"></span>
+            </div>
+            <div class="today-tracker">
+                <div class="checkbox-card" id="morningCard" onclick="togglePeriod('morning')">
+                    <span class="time-icon">🌅</span>
+                    <span class="time-label">Morning</span>
+                    <div class="check-circle">
+                        <span class="checkmark">✓</span>
+                    </div>
+                </div>
+                <div class="checkbox-card" id="nightCard" onclick="togglePeriod('night')">
+                    <span class="time-icon">🌙</span>
+                    <span class="time-label">Night</span>
+                    <div class="check-circle">
+                        <span class="checkmark">✓</span>
+                    </div>
+                </div>
+            </div>
+            <div style="text-align:center;margin-top:10px;font-size:0.75rem;color:#94a3b8;font-weight:500;">
+                💡 Tap a past day's cell in the calendar to edit it
+            </div>
+        </div>
+
+        <!-- Calendar Heat Map Card -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">📅 Heat Map</span>
+            </div>
+            <div class="month-nav">
+                <button onclick="navigateMonth(-1)" aria-label="Previous month">◀</button>
+                <span class="month-label" id="monthLabel"></span>
+                <button onclick="navigateMonth(1)" aria-label="Next month">▶</button>
+                <button class="today-btn" onclick="goToToday()">Today</button>
+            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
+            <div class="legend" style="margin-top:12px;">
+                <div class="legend-item"><span class="legend-swatch swatch-both"></span> Both</div>
+                <div class="legend-item"><span class="legend-swatch swatch-one"></span> Partial</div>
+                <div class="legend-item"><span class="legend-swatch swatch-missed"></span> Missed</div>
+                <div class="legend-item"><span class="legend-swatch swatch-future"></span> Future</div>
+                <div class="legend-item" style="gap:3px;">
+                    <span style="display:flex;gap:2px;">
+                        <span style="width:7px;height:7px;border-radius:50%;background:#22c55e;display:inline-block;"></span>
+                        <span style="width:7px;height:7px;border-radius:50%;background:#fca5a5;display:inline-block;border:1px solid #f87171;"></span>
+                    </span>
+                    AM / PM dots
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Card -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">📊 Statistics</span>
+                <span style="font-size:0.75rem;color:#94a3b8;font-weight:500;" id="statsMonthLabel"></span>
+            </div>
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-value green" id="statAdherence">--%</div>
+                    <div class="stat-label">Monthly Adherence</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value blue" id="statStreak">0</div>
+                    <div class="stat-label">Current Streak (days)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value blue" id="statBestStreak">0</div>
+                    <div class="stat-label">Best Streak</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value orange" id="statTotal">0</div>
+                    <div class="stat-label">Total Applications</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        (function() {
+            // --- Constants ---
+            const STORAGE_KEY = 'minoxidil_tracker_data';
+            const DAY_HEADERS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+            // --- State ---
+            let currentViewMonth = new Date().getMonth(); // 0-indexed
+            let currentViewYear = new Date().getFullYear();
+            let appData = {}; // { "YYYY-MM-DD": { morning: bool, night: bool } }
+            let toastTimer = null;
+
+            // --- DOM refs ---
+            const morningCard = document.getElementById('morningCard');
+            const nightCard = document.getElementById('nightCard');
+            const todayDateLabel = document.getElementById('todayDateLabel');
+            const monthLabel = document.getElementById('monthLabel');
+            const calendarGrid = document.getElementById('calendarGrid');
+            const statsMonthLabel = document.getElementById('statsMonthLabel');
+            const statAdherence = document.getElementById('statAdherence');
+            const statStreak = document.getElementById('statStreak');
+            const statBestStreak = document.getElementById('statBestStreak');
+            const statTotal = document.getElementById('statTotal');
+            const toast = document.getElementById('toast');
+            const todayCardEl = document.getElementById('todayCard');
+
+            // --- Helpers ---
+            function getDateKey(year, month, day) {
+                const m = String(month + 1).padStart(2, '0');
+                const d = String(day).padStart(2, '0');
+                return `${year}-${m}-${d}`;
+            }
+
+            function getTodayKey() {
+                const now = new Date();
+                return getDateKey(now.getFullYear(), now.getMonth(), now.getDate());
+            }
+
+            function getTodayDate() {
+                const now = new Date();
+                return { year: now.getFullYear(), month: now.getMonth(), day: now.getDate() };
+            }
+
+            function daysInMonth(year, month) {
+                return new Date(year, month + 1, 0).getDate();
+            }
+
+            function getDayOfWeek(year, month, day) {
+                // Returns 0=Mon, 1=Tue, ..., 6=Sun
+                const jsDay = new Date(year, month, day).getDay(); // 0=Sun
+                return jsDay === 0 ? 6 : jsDay - 1;
+            }
+
+            function getData(dateKey) {
+                return appData[dateKey] || null;
+            }
+
+            function setData(dateKey, period, value) {
+                if (!appData[dateKey]) {
+                    appData[dateKey] = { morning: false, night: false };
+                }
+                appData[dateKey][period] = value;
+                // Clean up if both are false (optional: keep entry for explicit misses)
+                // We'll keep entries even if both false to distinguish from "no data"
+                saveData();
+            }
+
+            function saveData() {
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+                } catch (e) {
+                    showToast('⚠️ Storage full. Clear some data.');
+                }
+            }
+
+            function loadData() {
+                try {
+                    const raw = localStorage.getItem(STORAGE_KEY);
+                    if (raw) {
+                        appData = JSON.parse(raw);
+                    } else {
+                        appData = {};
+                    }
+                } catch (e) {
+                    appData = {};
+                }
+            }
+
+            // --- Toast ---
+            function showToast(message) {
+                if (toastTimer) clearTimeout(toastTimer);
+                toast.textContent = message;
+                toast.classList.add('show');
+                toastTimer = setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 1800);
+            }
+
+            // --- Update today's checkboxes ---
+            function updateTodayCheckboxes() {
+                const todayKey = getTodayKey();
+                const data = getData(todayKey);
+                const todayDate = getTodayDate();
+                const dateStr = new Date(todayDate.year, todayDate.month, todayDate.day).toLocaleDateString(
+                    'en-US', {
+                        weekday: 'short',
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                    });
+                todayDateLabel.textContent = dateStr;
+
+                // Morning
+                if (data && data.morning) {
+                    morningCard.classList.add('checked');
+                } else {
+                    morningCard.classList.remove('checked');
+                }
+                // Night
+                if (data && data.night) {
+                    nightCard.classList.add('checked');
+                } else {
+                    nightCard.classList.remove('checked');
+                }
+            }
+
+            function togglePeriod(period) {
+                const todayKey = getTodayKey();
+                const data = getData(todayKey);
+                const currentValue = data ? data[period] : false;
+                const newValue = !currentValue;
+                setData(todayKey, period, newValue);
+                updateTodayCheckboxes();
+                renderCalendar();
+                updateStats();
+
+                // Celebration if both are now checked
+                const updatedData = getData(todayKey);
+                if (updatedData && updatedData.morning && updatedData.night && newValue) {
+                    todayCardEl.classList.add('celebrate');
+                    setTimeout(() => todayCardEl.classList.remove('celebrate'), 600);
+                    showToast('🎉 Perfect day! Both applications done!');
+                } else if (newValue) {
+                    const emoji = period === 'morning' ? '🌅' : '🌙';
+                    showToast(`${emoji} ${period === 'morning' ? 'Morning' : 'Night'} application logged!`);
+                } else {
+                    showToast(`↩️ ${period === 'morning' ? 'Morning' : 'Night'} mark removed`);
+                }
+            }
+
+            // --- Calendar Rendering ---
+            function getCellStatus(dateKey, year, month, day) {
+                const todayKey = getTodayKey();
+                const isFuture = dateKey > todayKey;
+                const isToday = dateKey === todayKey;
+                const data = getData(dateKey);
+                const isPast = dateKey < todayKey;
+
+                if (isFuture) return 'future';
+                if (!data && isPast) return 'no-data-past';
+                if (!data && isToday) return 'today-no-data';
+                if (data && data.morning && data.night) return 'both';
+                if (data && (data.morning || data.night)) return 'one';
+                if (data && !data.morning && !data.night) return 'missed';
+                if (isToday && !data) return 'today-no-data';
+                return 'no-data-past';
+            }
+
+            function renderCalendar() {
+                const year = currentViewYear;
+                const month = currentViewMonth;
+                const totalDays = daysInMonth(year, month);
+                const firstDow = getDayOfWeek(year, month, 1); // 0=Mon
+                const today = getTodayDate();
+                const todayKey = getTodayKey();
+
+                // Update month label
+                const monthName = new Date(year, month, 1).toLocaleDateString('en-US', {
+                    month: 'long',
+                    year: 'numeric'
+                });
+                monthLabel.textContent = monthName;
+
+                // Build grid
+                let html = '';
+
+                // Day headers
+                DAY_HEADERS.forEach(dh => {
+                    html += `<div class="day-header">${dh}</div>`;
+                });
+
+                // Previous month filler cells
+                const prevMonthDays = daysInMonth(year, month - 1 < 0 ? 11 : month - 1, month - 1 < 0 ? year -
+                    1 : year);
+                for (let i = 0; i < firstDow; i++) {
+                    const prevDay = prevMonthDays - firstDow + i + 1;
+                    const pm = month - 1 < 0 ? 11 : month - 1;
+                    const py = month - 1 < 0 ? year - 1 : year;
+                    const dateKey = getDateKey(py, pm, prevDay);
+                    html += `
+                <div class="calendar-cell other-month" data-date="${dateKey}">
+                  <span class="day-num">${prevDay}</span>
+                  <div class="indicators">
+                    <span class="dot future-dot"></span>
+                    <span class="dot future-dot"></span>
+                  </div>
+                </div>`;
+                }
+
+                // Current month days
+                for (let day = 1; day <= totalDays; day++) {
+                    const dateKey = getDateKey(year, month, day);
+                    const status = getCellStatus(dateKey, year, month, day);
+                    const isToday = dateKey === todayKey;
+                    const isPast = dateKey < todayKey;
+                    const data = getData(dateKey);
+
+                    let cellClass = 'calendar-cell';
+                    if (isToday) cellClass += ' today';
+                    if (isPast || isToday) cellClass += ' past';
+
+                    switch (status) {
+                        case 'both':
+                            cellClass += ' cell-both';
+                            break;
+                        case 'one':
+                            cellClass += ' cell-one';
+                            break;
+                        case 'missed':
+                            cellClass += ' cell-missed';
+                            break;
+                        case 'no-data-past':
+                            cellClass += ' cell-no-data-past';
+                            break;
+                        case 'future':
+                            cellClass += ' cell-future';
+                            break;
+                        case 'today-no-data':
+                            cellClass += ' cell-no-data-past';
+                            break;
+                        default:
+                            cellClass += ' cell-future';
+                    }
+
+                    // Determine dot classes
+                    let amClass = 'dot future-dot';
+                    let pmClass = 'dot future-dot';
+                    if (data) {
+                        amClass = data.morning ? 'dot done' : 'dot missed';
+                        pmClass = data.night ? 'dot done' : 'dot missed';
+                    } else if (status === 'no-data-past' || status === 'today-no-data') {
+                        amClass = 'dot no-data';
+                        pmClass = 'dot no-data';
+                    } else if (status === 'future') {
+                        amClass = 'dot future-dot';
+                        pmClass = 'dot future-dot';
+                    }
+
+                    const clickable = (isPast || isToday) ? 'onclick="handleCellClick(event, \'' + dateKey +
+                        '\')"' : '';
+
+                    html += `
+                <div class="${cellClass}" data-date="${dateKey}" ${clickable}>
+                  <span class="day-num">${day}</span>
+                  <div class="indicators">
+                    <span class="${amClass}" data-period="morning" data-date="${dateKey}"></span>
+                    <span class="${pmClass}" data-period="night" data-date="${dateKey}"></span>
+                  </div>
+                </div>`;
+                }
+
+                // Fill remaining cells with next month
+                const totalCells = firstDow + totalDays;
+                const remainingCells = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+                const nm = month + 1 > 11 ? 0 : month + 1;
+                const ny = month + 1 > 11 ? year + 1 : year;
+                for (let day = 1; day <= remainingCells; day++) {
+                    const dateKey = getDateKey(ny, nm, day);
+                    html += `
+                <div class="calendar-cell other-month" data-date="${dateKey}">
+                  <span class="day-num">${day}</span>
+                  <div class="indicators">
+                    <span class="dot future-dot"></span>
+                    <span class="dot future-dot"></span>
+                  </div>
+                </div>`;
+                }
+
+                calendarGrid.innerHTML = html;
+            }
+
+            function handleCellClick(event, dateKey) {
+                // Determine which dot was clicked
+                const target = event.target;
+                let period = null;
+                if (target.classList.contains('dot') && target.dataset.period) {
+                    period = target.dataset.period;
+                } else {
+                    // Clicked the cell but not a specific dot – toggle morning first, then night
+                    const data = getData(dateKey);
+                    if (!data || (!data.morning && !data.night)) {
+                        period = 'morning';
+                    } else if (data.morning && !data.night) {
+                        period = 'night';
+                    } else if (!data.morning && data.night) {
+                        period = 'morning';
+                    } else {
+                        // Both done – clicking cell unmarks morning
+                        period = 'morning';
+                    }
+                }
+
+                const todayKey = getTodayKey();
+                if (dateKey > todayKey) return; // Can't edit future
+
+                const data = getData(dateKey);
+                const currentValue = data ? data[period] : false;
+                const newValue = !currentValue;
+                setData(dateKey, period, newValue);
+
+                if (dateKey === todayKey) {
+                    updateTodayCheckboxes();
+                }
+                renderCalendar();
+                updateStats();
+
+                if (newValue) {
+                    showToast(`✅ ${period === 'morning' ? 'AM' : 'PM'} marked for ${dateKey}`);
+                } else {
+                    showToast(`↩️ ${period === 'morning' ? 'AM' : 'PM'} unmarked for ${dateKey}`);
+                }
+            }
+
+            // --- Navigation ---
+            function navigateMonth(delta) {
+                currentViewMonth += delta;
+                if (currentViewMonth < 0) {
+                    currentViewMonth = 11;
+                    currentViewYear--;
+                } else if (currentViewMonth > 11) {
+                    currentViewMonth = 0;
+                    currentViewYear++;
+                }
+                renderCalendar();
+                updateStats();
+            }
+
+            function goToToday() {
+                const today = getTodayDate();
+                currentViewMonth = today.month;
+                currentViewYear = today.year;
+                renderCalendar();
+                updateStats();
+            }
+
+            // --- Statistics ---
+            function updateStats() {
+                const year = currentViewYear;
+                const month = currentViewMonth;
+                const totalDays = daysInMonth(year, month);
+                const todayKey = getTodayKey();
+                const today = getTodayDate();
+
+                // Monthly adherence
+                let possibleApplications = 0;
+                let completedApplications = 0;
+                const nowKey = todayKey;
+
+                for (let day = 1; day <= totalDays; day++) {
+                    const dateKey = getDateKey(year, month, day);
+                    if (dateKey <= nowKey) {
+                        possibleApplications += 2; // morning + night
+                        const data = getData(dateKey);
+                        if (data) {
+                            if (data.morning) completedApplications++;
+                            if (data.night) completedApplications++;
+                        }
+                    }
+                }
+
+                const adherence = possibleApplications > 0 ? Math.round((completedApplications /
+                    possibleApplications) * 100) : 0;
+                statAdherence.textContent = adherence + '%';
+                if (adherence >= 80) statAdherence.className = 'stat-value green';
+                else if (adherence >= 50) statAdherence.className = 'stat-value orange';
+                else statAdherence.className = 'stat-value orange';
+
+                // Current streak (consecutive days going back from today with BOTH applications)
+                let streak = 0;
+                const checkDate = new Date(today.year, today.month, today.day);
+                while (true) {
+                    const dk = getDateKey(checkDate.getFullYear(), checkDate.getMonth(), checkDate.getDate());
+                    if (dk > todayKey) {
+                        // future, skip
+                        checkDate.setDate(checkDate.getDate() - 1);
+                        continue;
+                    }
+                    const data = getData(dk);
+                    if (data && data.morning && data.night) {
+                        streak++;
+                        checkDate.setDate(checkDate.getDate() - 1);
+                    } else {
+                        break;
+                    }
+                }
+                statStreak.textContent = streak;
+
+                // Best streak
+                let bestStreak = 0;
+                let allDates = Object.keys(appData).filter(k => appData[k] && appData[k].morning && appData[k]
+                    .night).sort();
+                if (allDates.length > 0) {
+                    let currentRun = 1;
+                    for (let i = 1; i < allDates.length; i++) {
+                        const prev = new Date(allDates[i - 1]);
+                        const curr = new Date(allDates[i]);
+                        const diffDays = Math.round((curr - prev) / (1000 * 60 * 60 * 24));
+                        if (diffDays === 1) {
+                            currentRun++;
+                        } else {
+                            bestStreak = Math.max(bestStreak, currentRun);
+                            currentRun = 1;
+                        }
+                    }
+                    bestStreak = Math.max(bestStreak, currentRun);
+                }
+                statBestStreak.textContent = bestStreak;
+
+                // Total applications
+                let totalApps = 0;
+                for (const key in appData) {
+                    if (appData[key]) {
+                        if (appData[key].morning) totalApps++;
+                        if (appData[key].night) totalApps++;
+                    }
+                }
+                statTotal.textContent = totalApps;
+
+                // Stats month label
+                const monthName = new Date(year, month, 1).toLocaleDateString('en-US', {
+                    month: 'long',
+                    year: 'numeric'
+                });
+                statsMonthLabel.textContent = monthName;
+            }
+
+            // --- Initialize ---
+            function init() {
+                loadData();
+                const today = getTodayDate();
+                currentViewMonth = today.month;
+                currentViewYear = today.year;
+                updateTodayCheckboxes();
+                renderCalendar();
+                updateStats();
+            }
+
+            // --- Expose to global scope for onclick handlers ---
+            window.togglePeriod = togglePeriod;
+            window.navigateMonth = navigateMonth;
+            window.goToToday = goToToday;
+            window.handleCellClick = handleCellClick;
+
+            // --- Keyboard shortcuts ---
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowLeft') navigateMonth(-1);
+                if (e.key === 'ArrowRight') navigateMonth(1);
+                if (e.key === 't' && !e.ctrlKey && !e.metaKey && document.activeElement === document
+                    .body) {
+                    goToToday();
+                }
+                if (e.key === 'm' && !e.ctrlKey && !e.metaKey && document.activeElement === document.body) {
+                    togglePeriod('morning');
+                }
+                if (e.key === 'n' && !e.ctrlKey && !e.metaKey && document.activeElement === document.body) {
+                    togglePeriod('night');
+                }
+            });
+
+            // --- Start ---
+            init();
+            console.log('💧 Minoxidil Tracker ready!');
+            console.log('  ⌨️ Keyboard shortcuts: M = toggle morning, N = toggle night, ← → = navigate months, T = go to today');
+            console.log('  📅 Data stored in your browser localStorage.');
+        })();
+    </script>
+</body>
+</html>
