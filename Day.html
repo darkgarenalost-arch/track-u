@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Daybook — today's page</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500;1,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+
+    --paper: #EEEBDF;
+    --paper-hole: #E1DCC9;
+    --ink: #26221C;
+    --ink-soft: #6E6656;
+    --rule: #D8D1BC;
+    --margin: #A13D34;
+    --margin-soft: rgba(161, 61, 52, 0.12);
+    --gold: #8F6B1E;
+    --gold-soft: rgba(143, 107, 30, 0.14);
+    --complete: #9C9585;
+    --toast-bg: #26221C;
+    --toast-text: #EEEBDF;
+    --danger: #A13D34;
+
+    --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  }
+
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      --paper: #1E1C17;
+      --paper-hole: #17150F;
+      --ink: #EDE7D8;
+      --ink-soft: #A69C87;
+      --rule: #3B362B;
+      --margin: #C9564A;
+      --margin-soft: rgba(201, 86, 74, 0.16);
+      --gold: #D6B24E;
+      --gold-soft: rgba(214, 178, 78, 0.14);
+      --complete: #6E6858;
+      --toast-bg: #EDE7D8;
+      --toast-text: #1E1C17;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper: #1E1C17;
+    --paper-hole: #17150F;
+    --ink: #EDE7D8;
+    --ink-soft: #A69C87;
+    --rule: #3B362B;
+    --margin: #C9564A;
+    --margin-soft: rgba(201, 86, 74, 0.16);
+    --gold: #D6B24E;
+    --gold-soft: rgba(214, 178, 78, 0.14);
+    --complete: #6E6858;
+    --toast-bg: #EDE7D8;
+    --toast-text: #1E1C17;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 36px 16px 60px;
+  }
+
+  button {
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--margin);
+    outline-offset: 2px;
+  }
+
+  .page { width: 100%; display: flex; justify-content: center; }
+
+  .sheet {
+    position: relative;
+    width: 100%;
+    max-width: 640px;
+    background: var(--paper);
+    padding: 40px 32px 32px 64px;
+    border-radius: 3px;
+    box-shadow: 0 1px 0 var(--rule);
+    animation: sheet-in 480ms ease-out;
+  }
+
+  @keyframes sheet-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .margin-rule {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 40px;
+    width: 2px;
+    background: var(--margin);
+    opacity: 0.7;
+  }
+
+  .holes {
+    position: absolute;
+    top: 48px;
+    left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 64px;
+  }
+
+  .holes span {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--paper-hole);
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.25);
+    display: block;
+  }
+
+  .sheet-head { margin-bottom: 28px; }
+
+  .date-weekday {
+    margin: 0 0 2px;
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+    letter-spacing: 0.01em;
+  }
+
+  .date-heading {
+    margin: 0 0 10px;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 600;
+    font-size: clamp(2rem, 6vw, 2.9rem);
+    color: var(--ink);
+    line-height: 1.05;
+  }
+
+  .status-line {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+  }
+
+  .add-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding-bottom: 18px;
+    margin-bottom: 6px;
+    border-bottom: 2px solid var(--rule);
+  }
+
+  .add-row input[type="text"] {
+    flex: 1 1 180px;
+    min-width: 0;
+    font-family: var(--font-mono);
+    font-size: 0.98rem;
+    color: var(--ink);
+    background: transparent;
+    border: none;
+    border-bottom: 1px dashed var(--rule);
+    padding: 8px 2px;
+  }
+
+  .add-row input[type="text"]::placeholder { color: var(--ink-soft); opacity: 0.8; }
+  .add-row input[type="text"]:focus { outline: none; border-bottom-color: var(--margin); }
+
+  .icon-btn {
+    background: transparent;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+    color: var(--ink-soft);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+  }
+  .icon-btn:hover { border-color: var(--ink-soft); }
+  .icon-btn[aria-pressed="true"] {
+    color: var(--gold);
+    border-color: var(--gold);
+    background: var(--gold-soft);
+  }
+
+  .add-row .time-input {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    background: transparent;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    color: var(--ink);
+    padding: 6px 8px;
+  }
+  .add-row .time-input.hidden { display: none; }
+
+  .add-btn {
+    background: var(--margin);
+    color: #F6F2E7;
+    border: none;
+    border-radius: 3px;
+    padding: 9px 16px;
+    font-size: 0.92rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    transition: opacity 150ms ease;
+  }
+  .add-btn:hover { opacity: 0.88; }
+
+  .task-list { list-style: none; margin: 0; padding: 0; }
+
+  .task-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .check-btn {
+    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
+    border: 1.5px solid var(--ink-soft);
+    border-radius: 3px;
+    background: transparent;
+    position: relative;
+    padding: 0;
+  }
+  .check-btn::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .task-row.completed .check-btn {
+    background: var(--ink-soft);
+    border-color: var(--ink-soft);
+  }
+  .task-row.completed .check-btn::before {
+    content: "✓";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--paper);
+    font-size: 0.8rem;
+  }
+
+  .task-text {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 0.98rem;
+    color: var(--ink);
+    overflow-wrap: anywhere;
+    cursor: text;
+    padding: 3px 2px;
+    border-radius: 2px;
+  }
+  .task-text:hover { background: var(--margin-soft); }
+  .task-row.completed .task-text {
+    color: var(--complete);
+    text-decoration: line-through;
+    text-decoration-color: var(--complete);
+  }
+
+  .task-edit-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-family: var(--font-mono);
+    font-size: 0.98rem;
+    color: var(--ink);
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--margin);
+    padding: 3px 2px;
+  }
+  .task-edit-input:focus { outline: none; }
+
+  .pin-btn {
+    flex: 0 0 auto;
+    background: transparent;
+    border: none;
+    font-size: 0.95rem;
+    color: var(--rule);
+    opacity: 0.6;
+    padding: 4px;
+  }
+  .pin-btn[aria-pressed="true"] { color: var(--gold); opacity: 1; }
+
+  .time-btn {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    border: none;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--rule);
+    opacity: 0.7;
+    padding: 4px 2px;
+    white-space: nowrap;
+  }
+  .time-btn.set { color: var(--margin); opacity: 1; }
+
+  .time-clear {
+    flex: 0 0 auto;
+    background: transparent;
+    border: none;
+    color: var(--ink-soft);
+    font-size: 0.78rem;
+    padding: 2px 4px;
+  }
+
+  .row-time-input {
+    flex: 0 0 auto;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    background: transparent;
+    border: 1px solid var(--margin);
+    border-radius: 3px;
+    color: var(--ink);
+    padding: 4px 6px;
+  }
+
+  .delete-btn {
+    flex: 0 0 auto;
+    background: transparent;
+    border: none;
+    color: var(--rule);
+    font-size: 0.95rem;
+    padding: 4px 2px 4px 6px;
+    opacity: 0;
+    transition: opacity 150ms ease, color 150ms ease;
+  }
+  .task-row:hover .delete-btn,
+  .task-row:focus-within .delete-btn { opacity: 1; }
+  .delete-btn:hover { color: var(--danger); }
+
+  .empty-state {
+    margin: 22px 2px 0;
+    font-size: 0.95rem;
+    color: var(--ink-soft);
+    font-style: italic;
+    font-family: var(--font-display);
+  }
+  .empty-state.hidden { display: none; }
+
+  .sheet-foot {
+    margin-top: 26px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--rule);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .ghost-btn {
+    background: transparent;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    color: var(--ink-soft);
+    font-size: 0.82rem;
+    padding: 7px 12px;
+  }
+  .ghost-btn:hover { border-color: var(--ink-soft); color: var(--ink); }
+  .ghost-btn.on { border-color: var(--gold); color: var(--gold); }
+
+  .fine-print {
+    margin: 0;
+    font-size: 0.76rem;
+    line-height: 1.5;
+    color: var(--ink-soft);
+    opacity: 0.85;
+    max-width: 46ch;
+  }
+
+  .toast-layer {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    padding: 0 16px calc(20px + env(safe-area-inset-bottom, 0px));
+    pointer-events: none;
+    z-index: 50;
+  }
+
+  .toast {
+    background: var(--toast-bg);
+    color: var(--toast-text);
+    font-family: var(--font-mono);
+    font-size: 0.86rem;
+    padding: 12px 16px;
+    border-radius: 4px;
+    max-width: 420px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+    animation: toast-in 220ms ease-out;
+  }
+
+  @keyframes toast-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 480px) {
+    .sheet { padding: 34px 18px 26px 50px; }
+    .margin-rule { left: 28px; }
+    .holes { left: 12px; gap: 52px; top: 42px; }
+    .holes span { width: 7px; height: 7px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+  <div class="page">
+    <div class="sheet">
+      <div class="margin-rule" aria-hidden="true"></div>
+      <div class="holes" aria-hidden="true"><span></span><span></span><span></span></div>
+
+      <header class="sheet-head">
+        <p class="date-weekday" id="dateWeekday"></p>
+        <h1 class="date-heading" id="dateHeading"></h1>
+        <p class="status-line" id="statusLine"></p>
+      </header>
+
+      <form class="add-row" id="addForm">
+        <input type="text" id="taskInput" placeholder="Write something down..." autocomplete="off" maxlength="200">
+        <button type="button" class="icon-btn" id="pinToggleBtn" aria-pressed="false" title="Keep this every day">📌</button>
+        <button type="button" class="icon-btn" id="timeToggleBtn" aria-pressed="false" title="Remind me at a time">🕐</button>
+        <input type="time" id="timeInput" class="time-input hidden">
+        <button type="submit" class="add-btn">Add</button>
+      </form>
+
+      <ul class="task-list" id="taskList"></ul>
+      <p class="empty-state hidden" id="emptyState">This page is blank. Add something to do today.</p>
+
+      <footer class="sheet-foot">
+        <button class="ghost-btn" id="notifPermBtn" type="button">Turn on reminders</button>
+        <p class="fine-print" id="finePrint">
+          One-time tasks clear when a new day starts — pin a task to keep it every day.
+          Reminders only ring while this page stays open in your browser.
+        </p>
+      </footer>
+    </div>
+  </div>
+
+  <div class="toast-layer" id="toastLayer" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var STORAGE_TASKS = "daybook.tasks.v1";
+  var STORAGE_DATE = "daybook.lastDate.v1";
+
+  var taskListEl = document.getElementById("taskList");
+  var emptyStateEl = document.getElementById("emptyState");
+  var statusLineEl = document.getElementById("statusLine");
+  var dateWeekdayEl = document.getElementById("dateWeekday");
+  var dateHeadingEl = document.getElementById("dateHeading");
+  var addFormEl = document.getElementById("addForm");
+  var taskInputEl = document.getElementById("taskInput");
+  var pinToggleBtn = document.getElementById("pinToggleBtn");
+  var timeToggleBtn = document.getElementById("timeToggleBtn");
+  var timeInputEl = document.getElementById("timeInput");
+  var notifPermBtn = document.getElementById("notifPermBtn");
+  var finePrintEl = document.getElementById("finePrint");
+  var toastLayer = document.getElementById("toastLayer");
+
+  var tasks = [];
+  var editingTextId = null;
+  var editingTimeId = null;
+  var newTaskRecurring = false;
+
+  function pad(n) { return String(n).padStart(2, "0"); }
+
+  function todayKey(d) {
+    d = d || new Date();
+    return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+  }
+
+  function nowHHMM(d) {
+    d = d || new Date();
+    return pad(d.getHours()) + ":" + pad(d.getMinutes());
+  }
+
+  function formatTime12(hhmm) {
+    if (!hhmm) return "";
+    var parts = hhmm.split(":");
+    var h = parseInt(parts[0], 10);
+    var m = parts[1];
+    var suffix = h >= 12 ? "PM" : "AM";
+    var h12 = h % 12;
+    if (h12 === 0) h12 = 12;
+    return h12 + ":" + m + " " + suffix;
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function uid() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    return "t" + Date.now() + Math.random().toString(16).slice(2);
+  }
+
+  function save() {
+    try {
+      localStorage.setItem(STORAGE_TASKS, JSON.stringify(tasks));
+      localStorage.setItem(STORAGE_DATE, todayKey());
+    } catch (err) {
+      console.error("Could not save to this browser's storage:", err);
+    }
+  }
+
+  function load() {
+    var storedTasks = [];
+    var storedDate = null;
+    try {
+      var rawTasks = localStorage.getItem(STORAGE_TASKS);
+      storedTasks = rawTasks ? JSON.parse(rawTasks) : [];
+      storedDate = localStorage.getItem(STORAGE_DATE);
+    } catch (err) {
+      console.error("Could not read this browser's storage:", err);
+      storedTasks = [];
+    }
+    tasks = Array.isArray(storedTasks) ? storedTasks : [];
+    rollover(storedDate);
+  }
+
+  function rollover(storedDate) {
+    var today = todayKey();
+    if (storedDate && storedDate === today) return;
+    tasks = tasks
+      .filter(function (t) { return t.recurring; })
+      .map(function (t) {
+        return Object.assign({}, t, { completed: false, notifiedDate: null });
+      });
+    save();
+  }
+
+  function renderDateHeader() {
+    var now = new Date();
+    dateWeekdayEl.textContent = new Intl.DateTimeFormat(undefined, { weekday: "long" }).format(now);
+    dateHeadingEl.textContent = new Intl.DateTimeFormat(undefined, { month: "long", day: "numeric" }).format(now);
+  }
+
+  function renderStatus() {
+    if (tasks.length === 0) {
+      statusLineEl.textContent = "";
+      emptyStateEl.classList.remove("hidden");
+      return;
+    }
+    emptyStateEl.classList.add("hidden");
+    var activeCount = tasks.filter(function (t) { return !t.completed; }).length;
+    if (activeCount === 0) {
+      statusLineEl.textContent = "Everything's done for today.";
+    } else {
+      statusLineEl.textContent = activeCount + (activeCount === 1 ? " thing left." : " things left.");
+    }
+  }
+
+  function renderNotifButton() {
+    if (!("Notification" in window)) {
+      notifPermBtn.style.display = "none";
+      return;
+    }
+    var perm = Notification.permission;
+    if (perm === "granted") {
+      notifPermBtn.textContent = "Reminders are on";
+      notifPermBtn.classList.add("on");
+    } else if (perm === "denied") {
+      notifPermBtn.textContent = "Reminders blocked in browser settings";
+      notifPermBtn.classList.remove("on");
+    } else {
+      notifPermBtn.textContent = "Turn on reminders";
+      notifPermBtn.classList.remove("on");
+    }
+  }
+
+  function renderTasks() {
+    taskListEl.innerHTML = "";
+    tasks.forEach(function (task) {
+      var li = document.createElement("li");
+      li.className = "task-row" + (task.completed ? " completed" : "");
+      li.setAttribute("data-id", task.id);
+
+      var checkBtn = document.createElement("button");
+      checkBtn.className = "check-btn";
+      checkBtn.type = "button";
+      checkBtn.setAttribute("aria-label", task.completed ? "Mark not done" : "Mark done");
+      checkBtn.addEventListener("click", function () { toggleComplete(task.id); });
+      li.appendChild(checkBtn);
+
+      if (editingTextId === task.id) {
+        var editInput = document.createElement("input");
+        editInput.className = "task-edit-input";
+        editInput.type = "text";
+        editInput.value = task.text;
+        editInput.maxLength = 200;
+        editInput.addEventListener("blur", function () { commitTextEdit(task.id, editInput.value); });
+        editInput.addEventListener("keydown", function (e) {
+          if (e.key === "Enter") { e.preventDefault(); editInput.blur(); }
+          if (e.key === "Escape") { editingTextId = null; renderTasks(); }
+        });
+        li.appendChild(editInput);
+        setTimeout(function () { editInput.focus(); editInput.select(); }, 0);
+      } else {
+        var textSpan = document.createElement("span");
+        textSpan.className = "task-text";
+        textSpan.textContent = task.text;
+        textSpan.title = "Click to edit";
+        textSpan.addEventListener("click", function () {
+          editingTextId = task.id;
+          renderTasks();
+        });
+        li.appendChild(textSpan);
+      }
+
+      var pinBtn = document.createElement("button");
+      pinBtn.className = "pin-btn";
+      pinBtn.type = "button";
+      pinBtn.setAttribute("aria-pressed", task.recurring ? "true" : "false");
+      pinBtn.title = task.recurring ? "Kept every day — click to make one-time" : "Click to keep this every day";
+      pinBtn.textContent = "📌";
+      pinBtn.addEventListener("click", function () { togglePin(task.id); });
+      li.appendChild(pinBtn);
+
+      if (editingTimeId === task.id) {
+        var timeInput = document.createElement("input");
+        timeInput.className = "row-time-input";
+        timeInput.type = "time";
+        if (task.notifyTime) timeInput.value = task.notifyTime;
+        timeInput.addEventListener("change", function () {
+          setTaskTime(task.id, timeInput.value);
+          editingTimeId = null;
+          renderTasks();
+        });
+        timeInput.addEventListener("blur", function () {
+          editingTimeId = null;
+          renderTasks();
+        });
+        li.appendChild(timeInput);
+        setTimeout(function () { timeInput.focus(); }, 0);
+      } else {
+        var timeBtn = document.createElement("button");
+        timeBtn.className = "time-btn" + (task.notifyTime ? " set" : "");
+        timeBtn.type = "button";
+        timeBtn.innerHTML = "🕐 " + (task.notifyTime ? escapeHtml(formatTime12(task.notifyTime)) : "Remind");
+        timeBtn.title = task.notifyTime ? "Click to change the reminder time" : "Set a reminder time";
+        timeBtn.addEventListener("click", function () {
+          editingTimeId = task.id;
+          renderTasks();
+        });
+        li.appendChild(timeBtn);
+
+        if (task.notifyTime) {
+          var clearBtn = document.createElement("button");
+          clearBtn.className = "time-clear";
+          clearBtn.type = "button";
+          clearBtn.textContent = "✕";
+          clearBtn.title = "Remove reminder";
+          clearBtn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            setTaskTime(task.id, "");
+            renderTasks();
+          });
+          li.appendChild(clearBtn);
+        }
+      }
+
+      var deleteBtn = document.createElement("button");
+      deleteBtn.className = "delete-btn";
+      deleteBtn.type = "button";
+      deleteBtn.setAttribute("aria-label", "Delete task");
+      deleteBtn.textContent = "✕";
+      deleteBtn.addEventListener("click", function () { deleteTask(task.id); });
+      li.appendChild(deleteBtn);
+
+      taskListEl.appendChild(li);
+    });
+  }
+
+  function render() {
+    renderTasks();
+    renderStatus();
+    renderNotifButton();
+  }
+
+  function addTask(text, recurring, notifyTime) {
+    var trimmed = text.trim();
+    if (!trimmed) return;
+    tasks.push({
+      id: uid(),
+      text: trimmed,
+      recurring: !!recurring,
+      notifyTime: notifyTime || null,
+      completed: false,
+      notifiedDate: null
+    });
+    save();
+    render();
+  }
+
+  function toggleComplete(id) {
+    tasks = tasks.map(function (t) {
+      return t.id === id ? Object.assign({}, t, { completed: !t.completed }) : t;
+    });
+    save();
+    render();
+  }
+
+  function togglePin(id) {
+    tasks = tasks.map(function (t) {
+      return t.id === id ? Object.assign({}, t, { recurring: !t.recurring }) : t;
+    });
+    save();
+    renderTasks();
+  }
+
+  function deleteTask(id) {
+    tasks = tasks.filter(function (t) { return t.id !== id; });
+    save();
+    render();
+  }
+
+  function setTaskTime(id, value) {
+    tasks = tasks.map(function (t) {
+      if (t.id !== id) return t;
+      return Object.assign({}, t, { notifyTime: value || null, notifiedDate: null });
+    });
+    save();
+  }
+
+  function commitTextEdit(id, newValue) {
+    var trimmed = newValue.trim();
+    editingTextId = null;
+    if (!trimmed) {
+      deleteTask(id);
+      return;
+    }
+    tasks = tasks.map(function (t) {
+      return t.id === id ? Object.assign({}, t, { text: trimmed }) : t;
+    });
+    save();
+    render();
+  }
+
+  function showToast(message) {
+    var toast = document.createElement("div");
+    toast.className = "toast";
+    toast.textContent = message;
+    toastLayer.appendChild(toast);
+    setTimeout(function () {
+      toast.remove();
+    }, 6000);
+  }
+
+  function checkReminders() {
+    var today = todayKey();
+    var current = nowHHMM();
+    var changed = false;
+    tasks.forEach(function (t) {
+      if (!t.notifyTime || t.completed) return;
+      if (t.notifyTime === current && t.notifiedDate !== today) {
+        t.notifiedDate = today;
+        changed = true;
+        if ("Notification" in window && Notification.permission === "granted") {
+          try {
+            new Notification("Daybook reminder", { body: t.text });
+          } catch (err) {
+            console.error("Notification failed:", err);
+          }
+        }
+        showToast("⏰ " + t.text);
+      }
+    });
+    if (changed) save();
+  }
+
+  addFormEl.addEventListener("submit", function (e) {
+    e.preventDefault();
+    addTask(taskInputEl.value, newTaskRecurring, timeInputEl.value);
+    taskInputEl.value = "";
+    newTaskRecurring = false;
+    pinToggleBtn.setAttribute("aria-pressed", "false");
+    timeInputEl.value = "";
+    timeInputEl.classList.add("hidden");
+    timeToggleBtn.setAttribute("aria-pressed", "false");
+    taskInputEl.focus();
+  });
+
+  pinToggleBtn.addEventListener("click", function () {
+    newTaskRecurring = !newTaskRecurring;
+    pinToggleBtn.setAttribute("aria-pressed", newTaskRecurring ? "true" : "false");
+  });
+
+  timeToggleBtn.addEventListener("click", function () {
+    var showing = !timeInputEl.classList.contains("hidden");
+    if (showing) {
+      timeInputEl.classList.add("hidden");
+      timeInputEl.value = "";
+      timeToggleBtn.setAttribute("aria-pressed", "false");
+    } else {
+      timeInputEl.classList.remove("hidden");
+      timeToggleBtn.setAttribute("aria-pressed", "true");
+      timeInputEl.focus();
+    }
+  });
+
+  notifPermBtn.addEventListener("click", function () {
+    if (!("Notification" in window)) return;
+    if (Notification.permission === "default") {
+      Notification.requestPermission().then(function () { renderNotifButton(); });
+    } else {
+      renderNotifButton();
+    }
+  });
+
+  renderDateHeader();
+  load();
+  render();
+
+  setInterval(function () {
+    var storedDate = null;
+    try { storedDate = localStorage.getItem(STORAGE_DATE); } catch (err) {}
+    var before = tasks.length;
+    rollover(storedDate);
+    if (tasks.length !== before) {
+      renderDateHeader();
+      render();
+    }
+    checkReminders();
+  }, 20000);
+
+})();
+</script>
+</body>
+</html>
