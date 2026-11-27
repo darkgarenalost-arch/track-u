@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Prop Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f2f4f6;--sf:#fff;--sf2:#f7f8fa;--ink:#141a21;--mut:#667280;--ln:#e0e4e9;--ac:#8f6b1c;--acs:#f3ead6;--good:#1b8a65;--bad:#c4453b;--shadow:0 1px 2px rgba(20,26,33,.05);color-scheme:light;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1116;--sf:#151b22;--sf2:#1a222b;--ink:#e8ecf0;--mut:#8b97a4;--ln:#252e38;--ac:#d1ae62;--acs:#2a2519;--good:#43c29a;--bad:#ee6f64;--shadow:none;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0d1116;--sf:#151b22;--sf2:#1a222b;--ink:#e8ecf0;--mut:#8b97a4;--ln:#252e38;--ac:#d1ae62;--acs:#2a2519;--good:#43c29a;--bad:#ee6f64;--shadow:none;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 14px/1.5 Manrope,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:18px 16px 60px}
+.num{font-variant-numeric:tabular-nums}
+header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.brand{font-weight:700;font-size:17px;letter-spacing:-.01em;margin-right:auto;display:flex;align-items:center;gap:9px}
+.logo{width:26px;height:26px;border-radius:7px;background:var(--ink);display:grid;place-items:center}
+.logo i{display:block;width:10px;height:10px;border:2px solid var(--ac);border-radius:50%}
+button,select,input,textarea{font:inherit;color:inherit}
+.btn{background:var(--sf);border:1px solid var(--ln);border-radius:8px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:var(--shadow)}
+.btn:hover{border-color:var(--mut)}
+.btn.pri{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.sm{padding:3px 8px;font-size:12px;font-weight:500;box-shadow:none}
+.btn.danger{color:var(--bad)}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+select.btn{padding-right:6px}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:12px;padding:16px;box-shadow:var(--shadow)}
+.mut{color:var(--mut)}
+.lbl{font-size:12.5px;color:var(--mut);font-weight:500}
+.good{color:var(--good)}.bad{color:var(--bad)}
+.hero{display:grid;grid-template-columns:1.2fr 1fr;gap:20px;align-items:end;margin-bottom:12px}
+.big{font-size:clamp(32px,6vw,46px);font-weight:700;letter-spacing:-.03em;line-height:1.1;margin:4px 0 6px}
+.bar{height:6px;border-radius:6px;background:var(--sf2);border:1px solid var(--ln);overflow:hidden}
+.bar>b{display:block;height:100%;background:var(--ac);border-radius:6px;transition:width .5s}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.split div b{display:block;font-size:19px;font-weight:700;letter-spacing:-.01em}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+.stat b{display:block;font-size:20px;font-weight:700;letter-spacing:-.02em;margin-top:2px}
+.stat small{color:var(--mut);font-size:12px}
+.two{display:grid;grid-template-columns:1.3fr 1fr;gap:12px;margin-bottom:12px}
+h2{font-size:14px;font-weight:700;margin:0 0 12px}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--mut);margin-bottom:6px}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px}
+.xo{overflow-x:auto}
+.ft{width:100%;border-collapse:collapse;font-size:13px;min-width:340px}
+.ft th{text-align:right;font-weight:500;color:var(--mut);font-size:12px;padding:0 0 8px 8px}
+.ft td{text-align:right;padding:8px 0 8px 8px;border-top:1px solid var(--ln)}
+.ft th:first-child,.ft td:first-child{text-align:left;padding-left:0;font-weight:600}
+.tabs{display:flex;gap:4px;margin-right:auto;background:var(--sf2);border:1px solid var(--ln);border-radius:9px;padding:3px}
+.tabs button{border:0;background:none;padding:5px 12px;border-radius:6px;font-weight:600;font-size:13px;color:var(--mut);cursor:pointer}
+.tabs button.on{background:var(--sf);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.lh{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+input.s{background:var(--sf2);border:1px solid var(--ln);border-radius:8px;padding:6px 10px;font-size:13px;width:160px}
+.row{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:11px 0;border-top:1px solid var(--ln);flex-wrap:wrap}
+.row .l{min-width:0;flex:1 1 160px}
+.row .l b{font-weight:600}
+.row .r{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.amt{font-weight:700;min-width:84px;text-align:right}
+.pill{border-radius:20px;padding:2px 8px;font-size:12px;font-weight:600;border:1px solid var(--ln);background:var(--sf2);cursor:pointer}
+.pill.Funded{color:var(--good);border-color:var(--good)}.pill.Terminated{color:var(--bad);border-color:var(--bad)}.pill.Evaluation{color:var(--ac);border-color:var(--ac)}
+.empty{padding:26px 0 10px;text-align:center;color:var(--mut)}
+dialog{border:1px solid var(--ln);border-radius:14px;background:var(--sf);color:var(--ink);padding:18px;width:min(400px,calc(100vw - 24px));box-shadow:0 20px 60px rgba(0,0,0,.35)}
+dialog::backdrop{background:rgba(5,8,12,.55)}
+.f{display:flex;flex-direction:column;gap:4px;margin-bottom:11px}
+.f input,.f select,.f textarea{background:var(--sf2);border:1px solid var(--ln);border-radius:8px;padding:8px 10px;font-size:14px;width:100%}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.acts{display:flex;gap:8px;justify-content:flex-end;margin-top:6px;flex-wrap:wrap}
+.err{color:var(--bad);font-size:12.5px;min-height:18px}
+.stk{display:flex;height:8px;border-radius:6px;overflow:hidden;background:var(--sf2);margin:8px 0 6px}
+.tip{font-size:12.5px;color:var(--mut)}
+@media (max-width:760px){.hero,.two{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.brand{width:100%}input.s{flex:1}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="brand"><span class="logo"><i></i></span>Prop Ledger</div>
+  <select id="per" class="btn" aria-label="Period"><option value="all">All time</option><option value="year">This year</option><option value="month">This month</option><option value="30d">Last 30 days</option></select>
+  <button class="btn" id="bTheme">Theme</button>
+  <button class="btn" id="bSet">Settings</button>
+  <button class="btn" id="bAcc">Add account</button>
+  <button class="btn pri" id="bPay">Add payout</button>
+</header>
+
+<section class="card hero">
+  <div>
+    <div class="lbl">Net result (payouts minus spent)</div>
+    <div class="big num" id="net"></div>
+    <div class="tip" id="netTip"></div>
+  </div>
+  <div>
+    <div class="split">
+      <div><span class="lbl">Total payouts</span><b class="num good" id="tp"></b></div>
+      <div><span class="lbl">Spent on accounts</span><b class="num" id="ts"></b></div>
+    </div>
+    <div style="margin-top:14px"><div class="bar"><b id="be" style="width:0"></b></div><div class="tip" style="margin-top:5px" id="beTip"></div></div>
+  </div>
+</section>
+
+<section class="stats" id="stats"></section>
+
+<section class="two">
+  <div class="card"><h2>Last 6 months</h2><div class="legend"><span><i style="background:var(--good)"></i>Payouts</span><span><i style="background:var(--ac)"></i>Spent</span></div><div id="chart"></div></div>
+  <div class="card"><h2>By firm</h2><div class="xo" id="firms"></div></div>
+</section>
+
+<section class="card">
+  <div class="lh">
+    <div class="tabs"><button id="tA" class="on">Accounts</button><button id="tP">Payouts</button></div>
+    <input class="s" id="q" placeholder="Search firm or note" aria-label="Search">
+  </div>
+  <div id="list"></div>
+</section>
+<p class="tip" style="margin-top:14px">Your data stays in this browser only. Use Settings to export a backup.</p>
+</div>
+
+<dialog id="dlg"><div id="dlgBody"></div></dialog>
+<datalist id="firmList"></datalist>
+
+<script>
+const KEY="propledger.v1";
+let S={accounts:[],payouts:[],cur:"$",goal:0,theme:""};
+let per="all",tab="acc",q="";
+try{const r=localStorage.getItem(KEY);if(r)S=Object.assign(S,JSON.parse(r))}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+const money=(n,sign)=>{const a=Math.abs(n).toLocaleString(undefined,{maximumFractionDigits:2});return (n<0?"−":(sign&&n>0?"+":""))+S.cur+a};
+const sum=a=>a.reduce((x,y)=>x+y,0);
+const COMMON=["FTMO","Apex Trader Funding","Topstep","FundedNext","The5ers","MyFundedFX","E8 Markets","Alpha Capital Group"];
+
+function inPer(d){
+  if(per==="all")return true;
+  const t=today();
+  if(per==="year")return d.slice(0,4)===t.slice(0,4);
+  if(per==="month")return d.slice(0,7)===t.slice(0,7);
+  const from=new Date();from.setDate(from.getDate()-30);return d>=from.toISOString().slice(0,10);
+}
+
+function render(){
+  const A=S.accounts.filter(a=>inPer(a.date)),P=S.payouts.filter(p=>inPer(p.date));
+  const spent=sum(A.map(a=>a.cost)),paid=sum(P.map(p=>p.amount)),net=paid-spent;
+  $("net").textContent=money(net,true);$("net").className="big num "+(net>0?"good":net<0?"bad":"");
+  $("tp").textContent=money(paid);$("ts").textContent=money(spent);
+  $("netTip").textContent=A.length+P.length===0?"Add your first account or payout to get started.":(net>=0?"You are in profit for this period.":"You are "+money(-net)+" away from break-even.");
+  const pct=spent>0?Math.min(100,paid/spent*100):(paid>0?100:0);
+  $("be").style.width=pct+"%";
+  const t=today().slice(0,7),mp=sum(S.payouts.filter(p=>p.date.slice(0,7)===t).map(p=>p.amount));
+  $("beTip").textContent=S.goal>0?"This month: "+money(mp)+" of "+money(S.goal)+" goal ("+Math.round(mp/S.goal*100)+"%)":"Payouts have covered "+Math.round(pct)+"% of spend. Set a monthly goal in Settings.";
+  if(S.goal>0)$("be").style.width=Math.min(100,mp/S.goal*100)+"%";
+
+  const term=A.filter(a=>a.status==="Terminated").length,fund=A.filter(a=>a.status==="Funded").length,ev=A.filter(a=>a.status==="Evaluation").length;
+  const roi=spent>0?net/spent*100:0;
+  const best=P.length?Math.max(...P.map(p=>p.amount)):0;
+  const tot=A.length||1;
+  $("stats").innerHTML=
+   `<div class="card stat"><small>Accounts bought</small><b class="num">${A.length}</b><small>${fund} funded, ${ev} in evaluation</small></div>
+    <div class="card stat"><small>Accounts terminated</small><b class="num bad">${term}</b><small>${A.length?Math.round(term/A.length*100):0}% of accounts</small></div>
+    <div class="card stat"><small>Return on spend</small><b class="num ${roi>=0?"good":"bad"}">${spent>0?(roi>0?"+":"")+roi.toFixed(0)+"%":"–"}</b><small>Avg cost ${A.length?money(spent/A.length):"–"}</small></div>
+    <div class="card stat"><small>Payouts received</small><b class="num">${P.length}</b><small>Avg ${P.length?money(paid/P.length):"–"}, best ${money(best)}</small></div>`;
+  // outcome split bar appended under accounts card tip
+  const sb=`<div class="stk" title="Funded / Evaluation / Terminated"><i style="width:${fund/tot*100}%;background:var(--good)"></i><i style="width:${ev/tot*100}%;background:var(--ac)"></i><i style="width:${term/tot*100}%;background:var(--bad)"></i></div>`;
+  if(A.length)$("stats").firstElementChild.insertAdjacentHTML("beforeend",sb);
+
+  chart();firms();list();
+  const fs=[...new Set(COMMON.concat(S.accounts.map(a=>a.firm),S.payouts.map(p=>p.firm)))];
+  $("firmList").innerHTML=fs.map(f=>`<option value="${esc(f)}">`).join("");
+}
+
+function chart(){
+  const ms=[];const d=new Date();d.setDate(1);
+  for(let i=5;i>=0;i--){const x=new Date(d.getFullYear(),d.getMonth()-i,1);ms.push(x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0"))}
+  const pay=ms.map(m=>sum(S.payouts.filter(p=>p.date.slice(0,7)===m).map(p=>p.amount)));
+  const sp=ms.map(m=>sum(S.accounts.filter(a=>a.date.slice(0,7)===m).map(a=>a.cost)));
+  const mx=Math.max(1,...pay,...sp);
+  const W=520,H=190,pb=24,ph=H-pb-8,bw=16,gap=(W-6*bw*2)/6;
+  let g="";
+  [0,.5,1].forEach(f=>{const y=8+ph*(1-f);g+=`<line x1="0" x2="${W}" y1="${y}" y2="${y}" stroke="var(--ln)"/>`});
+  ms.forEach((m,i)=>{
+    const x=gap/2+i*(bw*2+gap);
+    const h1=pay[i]/mx*ph,h2=sp[i]/mx*ph;
+    g+=`<rect x="${x}" y="${8+ph-h1}" width="${bw}" height="${h1}" rx="3" fill="var(--good)"><title>${m} payouts ${money(pay[i])}</title></rect>`;
+    g+=`<rect x="${x+bw+2}" y="${8+ph-h2}" width="${bw}" height="${h2}" rx="3" fill="var(--ac)"><title>${m} spent ${money(sp[i])}</title></rect>`;
+    g+=`<text x="${x+bw}" y="${H-6}" text-anchor="middle" font-size="11" fill="var(--mut)">${new Date(m+"-01T00:00").toLocaleString(undefined,{month:"short"})}</text>`;
+  });
+  $("chart").innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Monthly payouts versus spend">${g}</svg>`;
+}
+
+function firms(){
+  const m={};
+  S.accounts.filter(a=>inPer(a.date)).forEach(a=>{const f=m[a.firm]=m[a.firm]||{s:0,p:0,n:0,t:0};f.s+=a.cost;f.n++;if(a.status==="Terminated")f.t++});
+  S.payouts.filter(p=>inPer(p.date)).forEach(p=>{const f=m[p.firm]=m[p.firm]||{s:0,p:0,n:0,t:0};f.p+=p.amount});
+  const rows=Object.entries(m).sort((a,b)=>(b[1].p-b[1].s)-(a[1].p-a[1].s));
+  if(!rows.length){$("firms").innerHTML=`<div class="empty">No firms yet.</div>`;return}
+  $("firms").innerHTML=`<table class="ft num"><tr><th>Firm</th><th>Spent</th><th>Paid</th><th>Net</th><th>Lost</th></tr>`+
+   rows.map(([k,v])=>{const n=v.p-v.s;return `<tr><td>${esc(k)}</td><td>${money(v.s)}</td><td>${money(v.p)}</td><td class="${n>=0?"good":"bad"}">${money(n,1)}</td><td>${v.t}/${v.n}</td></tr>`}).join("")+`</table>`;
+}
+
+function list(){
+  $("tA").className=tab==="acc"?"on":"";$("tP").className=tab==="pay"?"on":"";
+  const s=q.toLowerCase();
+  const hit=o=>!s||(o.firm+" "+(o.note||"")).toLowerCase().includes(s);
+  const dfmt=d=>new Date(d+"T00:00").toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric"});
+  let h="";
+  if(tab==="acc"){
+    const L=S.accounts.filter(hit).sort((a,b)=>b.date.localeCompare(a.date));
+    h=L.map(a=>`<div class="row"><div class="l"><b>${esc(a.firm)}</b>${a.size?` <span class="mut">${money(a.size)} account</span>`:""}<div class="tip">${dfmt(a.date)}${a.note?" · "+esc(a.note):""}</div></div>
+      <div class="r"><select class="pill ${a.status}" onchange="setSt('${a.id}',this.value)" aria-label="Status">${["Evaluation","Funded","Terminated"].map(x=>`<option ${x===a.status?"selected":""}>${x}</option>`).join("")}</select>
+      <span class="amt num">${money(a.cost)}</span><button class="btn sm" onclick="openForm('acc','${a.id}')">Edit</button><button class="btn sm danger" onclick="del('acc','${a.id}')">Delete</button></div></div>`).join("");
+    if(!L.length)h=`<div class="empty">${S.accounts.length?"No accounts match your search.":"No accounts yet. Add the first one you bought."}</div>`;
+  }else{
+    const L=S.payouts.filter(hit).sort((a,b)=>b.date.localeCompare(a.date));
+    h=L.map(p=>`<div class="row"><div class="l"><b>${esc(p.firm)}</b><div class="tip">${dfmt(p.date)}${p.note?" · "+esc(p.note):""}</div></div>
+      <div class="r"><span class="amt num good">${money(p.amount,1)}</span><button class="btn sm" onclick="openForm('pay','${p.id}')">Edit</button><button class="btn sm danger" onclick="del('pay','${p.id}')">Delete</button></div></div>`).join("");
+    if(!L.length)h=`<div class="empty">${S.payouts.length?"No payouts match your search.":"No payouts yet. Add one when you get paid."}</div>`;
+  }
+  $("list").innerHTML=h;
+}
+
+function setSt(id,v){const a=S.accounts.find(x=>x.id===id);if(a){a.status=v;save();render()}}
+function del(k,id){if(!confirm("Delete this entry? This can’t be undone."))return;const key=k==="acc"?"accounts":"payouts";S[key]=S[key].filter(x=>x.id!==id);save();render()}
+
+function openForm(kind,id){
+  const isA=kind==="acc",o=(isA?S.accounts:S.payouts).find(x=>x.id===id)||{};
+  const f=(l,i,v,t="text",x="")=>`<div class="f"><label class="lbl" for="${i}">${l}</label><input id="${i}" type="${t}" value="${esc(v)}" ${x}></div>`;
+  $("dlgBody").innerHTML=`<h2 style="font-size:16px">${id?"Edit":"Add"} ${isA?"account":"payout"}</h2>
+   ${f("Firm","fFirm",o.firm||"","text",'list="firmList" autocomplete="off"')}
+   ${isA?`<div class="f2">${f("Cost paid","fAmt",o.cost??"","number",'min="0" step="any" inputmode="decimal"')}${f("Account size (optional)","fSize",o.size??"","number",'min="0" step="any" inputmode="decimal"')}</div>
+   <div class="f2">${f("Date bought","fDate",o.date||today(),"date")}<div class="f"><label class="lbl" for="fSt">Status</label><select id="fSt">${["Evaluation","Funded","Terminated"].map(x=>`<option ${x===(o.status||"Evaluation")?"selected":""}>${x}</option>`).join("")}</select></div></div>`
+   :`<div class="f2">${f("Amount received","fAmt",o.amount??"","number",'min="0" step="any" inputmode="decimal"')}${f("Date","fDate",o.date||today(),"date")}</div>`}
+   ${f("Note (optional)","fNote",o.note||"")}
+   <div class="err" id="fErr"></div>
+   <div class="acts"><button class="btn" onclick="dlg.close()">Cancel</button><button class="btn pri" onclick="submitForm('${kind}','${id||""}')">Save ${isA?"account":"payout"}</button></div>`;
+  dlg.showModal();$("fFirm").focus();
+}
+function submitForm(kind,id){
+  const firm=$("fFirm").value.trim(),amt=parseFloat($("fAmt").value),date=$("fDate").value,note=$("fNote").value.trim();
+  if(!firm)return $("fErr").textContent="Enter the firm name.";
+  if(!(amt>=0))return $("fErr").textContent="Enter a valid amount.";
+  if(!date)return $("fErr").textContent="Pick a date.";
+  if(kind==="acc"){
+    const o={id:id||uid(),firm,cost:amt,size:parseFloat($("fSize").value)||0,date,status:$("fSt").value,note};
+    const i=S.accounts.findIndex(x=>x.id===id);i>=0?S.accounts[i]=o:S.accounts.push(o);tab="acc";
+  }else{
+    const o={id:id||uid(),firm,amount:amt,date,note};
+    const i=S.payouts.findIndex(x=>x.id===id);i>=0?S.payouts[i]=o:S.payouts.push(o);tab="pay";
+  }
+  save();dlg.close();render();
+}
+
+function openSettings(){
+  $("dlgBody").innerHTML=`<h2 style="font-size:16px">Settings</h2>
+   <div class="f2"><div class="f"><label class="lbl" for="sCur">Currency symbol</label><select id="sCur">${["$","€","£","₹","A$","C$"].map(c=>`<option ${c===S.cur?"selected":""}>${c}</option>`).join("")}</select></div>
+   <div class="f"><label class="lbl" for="sGoal">Monthly payout goal</label><input id="sGoal" type="number" min="0" step="any" value="${S.goal||""}" placeholder="0"></div></div>
+   <div class="lbl" style="margin:4px 0 6px">Backup</div>
+   <div class="acts" style="justify-content:flex-start;margin-top:0"><button class="btn" onclick="exportJSON()">Export JSON</button><button class="btn" onclick="exportCSV()">Export CSV</button><button class="btn" onclick="$('imp').click()">Import JSON</button><input id="imp" type="file" accept=".json" hidden></div>
+   <div class="err" id="fErr"></div>
+   <div class="acts"><button class="btn danger" onclick="resetAll()">Erase all data</button><button class="btn pri" onclick="saveSet()">Save</button></div>`;
+  $("imp").onchange=e=>{const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.accounts)||!Array.isArray(d.payouts))throw 0;if(confirm("Replace your current data with this backup?")){S=Object.assign(S,d);save();render();dlg.close()}}catch(x){$("fErr").textContent="That file isn’t a valid Prop Ledger backup."}};if(e.target.files[0])r.readAsText(e.target.files[0])};
+  dlg.showModal();
+}
+function saveSet(){S.cur=$("sCur").value;S.goal=parseFloat($("sGoal").value)||0;save();dlg.close();render()}
+function dl(name,txt,type){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([txt],{type}));a.download=name;document.body.appendChild(a);a.click();a.remove()}
+function exportJSON(){dl("prop-ledger-backup.json",JSON.stringify(S,null,2),"application/json")}
+function exportCSV(){
+  const c=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
+  const rows=[["type","firm","date","amount","account_size","status","note"]].concat(
+    S.accounts.map(a=>["account",a.firm,a.date,a.cost,a.size,a.status,a.note]),
+    S.payouts.map(p=>["payout",p.firm,p.date,p.amount,"","",p.note]));
+  dl("prop-ledger.csv",rows.map(r=>r.map(c).join(",")).join("\n"),"text/csv");
+}
+function resetAll(){if(confirm("Erase all accounts and payouts from this browser?")&&confirm("This is permanent. Erase everything?")){S.accounts=[];S.payouts=[];save();render();dlg.close()}}
+
+function applyTheme(){const r=document.documentElement;S.theme?r.setAttribute("data-theme",S.theme):r.removeAttribute("data-theme")}
+const dlg=$("dlg");
+$("bAcc").onclick=()=>openForm("acc");$("bPay").onclick=()=>openForm("pay");$("bSet").onclick=openSettings;
+$("bTheme").onclick=()=>{const dark=document.documentElement.getAttribute("data-theme")==="dark"||(!S.theme&&matchMedia("(prefers-color-scheme:dark)").matches);S.theme=dark?"light":"dark";save();applyTheme()};
+$("tA").onclick=()=>{tab="acc";list()};$("tP").onclick=()=>{tab="pay";list()};
+$("q").oninput=e=>{q=e.target.value;list()};
+$("per").onchange=e=>{per=e.target.value;render()};
+dlg.addEventListener("click",e=>{if(e.target===dlg)dlg.close()});
+applyTheme();render();
+</script>
+</body>
+</html>
